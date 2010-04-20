@@ -61,6 +61,13 @@
                 <div style="clear: both;"></div>
             </div>
 
+            <!-- empty lobby message -->
+            <div id="empty" style="display:none;">
+                <h2><span>You don't have any rooms</span></h2>
+                <p>To create a room click the red "Create a new room" link in the right corner.<br />
+                You can create as many rooms as you like.</p>
+            </div>
+
             <!-- rooms listing -->
             <table id="lobby"><tr><td></td><td></td><td></td></tr></table>
             <div style="clear:both; padding-top:45px;"></div>

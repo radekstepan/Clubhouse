@@ -22,10 +22,6 @@ class AuthPresenter extends Fari_ApplicationPresenter {
 
     private $user = FALSE;
 	
-	public function startup() { 
-        $this->bag->messages = Fari_Message::get();
-    }
-	
 	public function actionIndex($p) {
         $this->render('Error404/error404');
     }
@@ -47,7 +43,6 @@ class AuthPresenter extends Fari_ApplicationPresenter {
 
             try {
                 $this->user = new UserLogin($username, $password, $this->request->getPost('token'));
-
             } catch (UserNotAuthenticatedException $e) {
                 Fari_Message::fail('Sorry, your username or password wasn\'t recognized');
 
@@ -77,7 +72,7 @@ class AuthPresenter extends Fari_ApplicationPresenter {
             // we might not be signed in actually
             $this->user = new User();
         } catch (UserNotAuthenticatedException $e) {
-            Fari_Message::success('You weren\'t logged in in the first place');
+            Fari_Message::success('You are already logged out');
         }
 
         // as we are logging out, leave us from all rooms
@@ -101,8 +96,9 @@ class AuthPresenter extends Fari_ApplicationPresenter {
             $this->user->signOut();
         }
 
-        Fari_Message::get();
+        $this->bag->messages = Fari_Message::get();
 
+        $this->bag->token = Fari_FormToken::create();
 		$this->render('login');
 	}
 

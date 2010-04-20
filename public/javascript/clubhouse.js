@@ -159,12 +159,12 @@ function showMessage() {
     if (shortName == lastUserName && 'text' == lastMessageType) name = ''
     else name = shortName;
 
-    // the message
+    // the message, saved into tbody otherwise the border glitches out...
     $('result').innerHTML += '\
-    <tr id="remove">\
+     <tbody id="remove"><tr>\
         <td class="user text our">' + name + '</td>\
         <td class="body text our">' + $('text').value + '</td>\
-    </tr>';
+    </tr></tbody>';
 
     scroll = true;
     scrollToBottom();
@@ -239,6 +239,13 @@ function displayRooms(json, highlight) {
         roomCount++;
     });
     lobbyRooms = newRooms;
+
+    // show 'no rooms' message
+    if (roomCount == 0) {
+        $('empty').style.display = 'block';
+    } else {
+        $('empty').style.display = 'none';
+    }
 }
 
 function createRoom() {
@@ -314,16 +321,19 @@ function deleteUser(url, param) {
     });
 }
 
+var deleteRoomText = 'Are you sure you want to delete the room?';
 function deleteRoom(url, param) {
-    $('room_' + param).innerHTML = "<div class='dots'>&nbsp;</div>";
-    new Ajax.Request(url + param,
-    {
-        method: 'get',
-        onSuccess: function(transport) {
-            $('room_' + param).remove();
-            alternateTableColor();
-        }
-    });
+    if (confirm(deleteRoomText)) {
+        $('room_' + param).innerHTML = "<div class='dots'>&nbsp;</div>";
+        new Ajax.Request(url + param,
+        {
+            method: 'get',
+            onSuccess: function(transport) {
+                $('room_' + param).remove();
+                alternateTableColor();
+            }
+        });
+    }
 }
 
 var lockRoomText = 'Are you sure you want to lock this room?';

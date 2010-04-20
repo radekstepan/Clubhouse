@@ -64,7 +64,7 @@ class System extends Fari_ApplicationModel {
     function isRoom($roomId) {
         $result = $this->db->selectRow('rooms', 'id', array('id' => $roomId, 'deleted' => 0));
         if (empty($result)) {
-            throw new RoomNotFoundExcception();
+            throw new RoomNotFoundException();
         } else {
             return $result;
         }

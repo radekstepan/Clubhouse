@@ -68,7 +68,7 @@ class Fari_ApplicationRoute extends Fari_Bag {
 	 * Error Presenter & action setting.
 	 */
     public function setErrorRoute() {
-        $this->presenter = self::ERROR_PRESENTER;
+        $this->presenter = self::ERROR_PRESENTER . 'Presenter';
         $this->setDefaultAction();
     }
 

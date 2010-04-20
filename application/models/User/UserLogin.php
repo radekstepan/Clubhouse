@@ -22,12 +22,12 @@ class UserLogin {
     function __construct($username, $password, $token=NULL) {
         $authenticator = new Fari_AuthenticatorSimple();
         // authenticator authenticates...
-        if ($authenticator->authenticate($username, $password, $token)) {
+        if ($authenticator->authenticate($username, $password, $token) != TRUE) {
             throw new UserNotAuthenticatedException();
+        } else {
+            // return the sweet beans
+            return new User();
         }
-
-        // return the sweet beans
-        return new User();
     }
 
 }

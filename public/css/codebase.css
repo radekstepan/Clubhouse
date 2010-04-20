@@ -71,6 +71,9 @@ div.button span { background:url('../images/button_right.gif') no-repeat 100% 0p
 
         #left #main p#history { padding:0px; margin:0px; margin-bottom:10px; color:#666; font-size:12px; }
 
+        #left #empty { margin-top:30px; }
+            #left #empty h2 span { font-size:16px; line-height:21px; background:#FFFFCC; }
+
         /* messages */
         #left table#result { margin-bottom:15px; }
         #left table#result td { background:#FFF; padding:5px; line-height:16px; border-bottom:1px solid #EFEFEF; }
