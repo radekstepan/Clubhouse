@@ -1,0 +1,70 @@
+<?php if (!defined('FARI')) die(); include('application/views/head.tpl.php'); ?>
+
+<body>
+    <!-- header -->
+    <div id="products"><a class="active" href="#">Clubhouse</a></div>
+    
+    <!-- menu -->
+    <div id="menu">
+        <ul>
+            <li><a href="<?php url('/'); ?>">Lobby</a></li>
+            <?php foreach($tabs as $roomName => $roomId): ?>
+                <li><a href="<?php url('/room/' . $roomId . '/'); ?>"><?php echo $roomName; ?></a></li>
+            <?php endforeach; ?>
+            <li class="indent"><a href="<?php url('/transcripts/'); ?>">Files, Transcripts &amp; Search</a></li>
+            
+            <li class="right nobg"><a href="<?php url('/logout/'); ?>">Sign out</a></li>
+            <li class="right"><a href="<?php url('/settings/'); ?>">Settings</a></li>
+            <li class="active right"><a href="<?php url('/users/'); ?>">Users</a></li>
+        </ul>
+    </div>
+
+    <!-- left column -->
+    <div id="left">
+        <!-- send an invitation -->
+        <div id="main">
+            <h1 class="small">Invite a new user to your Clubhouse account</h1>
+            <p>The person you invite will receive an email with an invitation link. When they click the link they can
+                choose their own username and password. Then they will be part of your account!</p>
+
+            <?php if (isset($message)): ?>
+                <div id="flash" class="<?php echo $message['status'] ;?>"><?php echo $message['message'] ;?></div>
+            <?php endif;?>
+
+            <form class="form" style="margin-top:34px;" method="POST" action="<?php url('/invitations/new/'); ?>">
+                <div class="step">
+                    <div class="green">1</div>
+                    <p><strong>Enter contact info for the person you want to invite</strong></p>
+                    <table class="form">
+                        <tr><td><label class="<?php if (isset($message) AND empty($first)) echo 'red'; ?>">
+                                    First name</label></td>
+                            <td><input name="first" type="text" value="<?php if (isset($first)) echo $first; ?>" /></td></tr>
+                        <tr><td><label>Last name</label></td>
+                            <td><input name="last" type="text" value="<?php if (isset($last)) echo $last; ?>" /></td></tr>
+                        <tr><td><label class="<?php if (isset($message) AND empty($email)) echo 'red'; ?>">
+                                    Email address</label></td>
+                            <td><input name="email" type="text" value="<?php if (isset($email)) echo $email; ?>" /></td></tr>
+                    </table>
+                </div>
+
+                <div class="step">
+                    <div class="green">2</div>
+                    <p><strong>Add a personal message to the email</strong> (optional)</p>
+                    <table class="form">
+                        <tr><td><textarea style="margin-left:45px;" rows="5"></textarea></td></tr>
+                    </table>
+                </div>
+
+                <input type="submit" style="margin-left:45px;" class="button" value="Send the invitation email" />
+                <span>or</span> <a class="cancel" href="<?php url('/users/'); ?>">Cancel</a>
+            </form>
+        </div>
+        
+        <div class="bottom">&nbsp;</div>
+    </div>
+
+    <!-- right column -->
+    <div id="right"></div>
+
+</body>
+</html>

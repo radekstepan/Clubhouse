@@ -1,0 +1,18 @@
+IndexIgnore *
+
+<IfModule mod_rewrite.c>
+# starts the mod_rewrite engine for url to filename translation
+RewriteEngine on
+
+# if the request is for a file that exists on the server, index.php isn't served
+RewriteCond %{REQUEST_FILENAME} !-f
+# if the request is for a directory that exists on the server, index.php isn't served
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# directs server to add the query string to the end of the url [QSA], last rule [L]
+RewriteRule ^(.*)$ index.php?route=$1 [L,QSA]
+</IfModule>
+
+# switch off magic quotes
+php_flag magic_quotes_gpc off
+php_flag short_open_tag on
