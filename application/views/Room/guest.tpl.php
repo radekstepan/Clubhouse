@@ -66,7 +66,7 @@
                 var userId = <?php echo $userId; ?>;
                 var lastUserName = '<?php echo $lastUserName; ?>';
                 var shortName = '<?php echo $shortName; ?>';
-                var lastMessage = <?php echo $lastMessage; ?>;
+                var lastMessage = <?php echo (isset($lastMessage)) ? $lastMessage : 0; ?>;
                 var lastMessageType = '<?php echo $lastMessageType; ?>';
             </script>
         </div>

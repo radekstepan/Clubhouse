@@ -50,7 +50,8 @@ class Message extends Fari_ApplicationModel {
 
 
     function switchHighlight($messageId) {
-        $result = $this->db->selectRow('messages', 'highlight, room, date', array('id' => $messageId, 'type' => 'text'));
+        $result = $this->db->selectRow('messages', 'highlight, room, date',
+            array('id' => $messageId, 'type' => 'text', 'locked' => 0));
         if (!empty($result)) {
             if ($result['highlight'] == 1) {
                 $highlight = 0;

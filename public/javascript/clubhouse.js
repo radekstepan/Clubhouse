@@ -22,12 +22,12 @@ function displayMessages(json) {
 
         // highlight
         var highlight = '';
-        if (message.type == 'text') {
+        if (message.type == 'text' && typeof(lockedRoom) != 'undefined' && !lockedRoom) {
             highlight = '<div id="highlight_'
                 + message.id + '" onclick="highlightMessage(\''
                 + message.id + '\');return false;" class="highlight"><a href=""></a></div>';
         }
-
+        
         $('result').innerHTML += '\
             <tr>\
                 <td class="user ' + message.type + ourMessage + '">' + lastUserName + '</td>\

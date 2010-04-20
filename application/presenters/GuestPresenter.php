@@ -39,12 +39,12 @@ class GuestPresenter extends Fari_ApplicationPresenter {
 	public function actionIndex($guestCode) {
         try {
             // get the room
-            $this->room->getGuestRoom($guestCode = Fari_Escape::text($guestCode));
+            $room = $this->room->getGuestRoom($guestCode = Fari_Escape::text($guestCode));
 
             // is user authenticated?
             $this->guestUser = new User();
             // is user authorized?
-            $this->guestUser->canEnter($this->room['id']);
+            $this->guestUser->canEnter($room['id']);
 
         // the room does not exist
         } catch (RoomNotFoundException $e) {
@@ -58,9 +58,7 @@ class GuestPresenter extends Fari_ApplicationPresenter {
 
         // we cannot enter this room
         } catch (UserNotAuthorizedException $e) {
-            $this->bag->code = $guestCode;
-            // show a form to enter a name for the new guest
-            $this->render('account/guest');
+            $this->render('room/permissions');
             
         }
                     
@@ -68,31 +66,31 @@ class GuestPresenter extends Fari_ApplicationPresenter {
         $time = mktime();
 
         // is the user already in the room?
-        if (!$this->guestUser->inRoom($this->room['id'])) {
+        if (!$this->guestUser->inRoom($room['id'])) {
             // not in the room... is it locked?
-            if ($this->room['locked']) {
+            if ($room['locked']) {
                 $system = new System();
                 $this->render('room/locked');
             } else {
                 // enter them into the room
-                $guestUser->enterRoom($this->room['id'], $time);
+                $this->guestUser->enterRoom($room['id'], $time);
 
                 // say that the user has entered
                 $message = new MessageSpeak();
-                $message->enter($this->room['id'], $time, $this->guestUser->getShortName());
+                $message->enter($room['id'], $time, $this->guestUser->getShortName());
             }
         }
 
         // all other fails captured...
         // show a 'guest' view
-        $this->render('room/guest');
+        $this->render('room/guest', $room['id']);
     }
 
-    public function renderGuest() {
+    public function renderGuest($roomId) {
         $messages = new Message();
-        $this->bag->messages = $messages->get($this->room['id']);
+        $this->bag->messages = $messages->get($roomId);
 
-        $this->bag->room = $this->room->getDescription($this->room['id']);
+        $this->bag->room = $this->room->getDescription($roomId);
 
         $this->bag->userId = $this->guestUser->getId();
         $this->bag->shortName = $this->guestUser->getShortName();
@@ -110,8 +108,8 @@ class GuestPresenter extends Fari_ApplicationPresenter {
     public function actionCreate() {
         $name = Fari_Decode::accents($this->request->getPost('name'));
         $code = $this->request->getPost('code');
-        if (!empty($name)) {
 
+        if (!empty($name)) {
             $name = explode(' ', $name);
             // do we have a 'long' name?
             if (count($name) > 1) {
