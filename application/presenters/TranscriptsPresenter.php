@@ -50,7 +50,7 @@ class TranscriptsPresenter extends Fari_ApplicationPresenter {
 
         try {
             // setup new transcripts object
-            $transcripts = new Transcripts($this->user->getPermissionsDbString());
+            $transcripts = new TranscriptListing($this->user->getPermissionsDbString());
         } catch (EmptyException $e) {
             $this->render('empty');
         }

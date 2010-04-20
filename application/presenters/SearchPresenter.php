@@ -45,7 +45,7 @@ class SearchPresenter extends Fari_ApplicationPresenter {
 
             $this->bag->q = $q = $this->request->getPost('q');
 
-            $messages = new Messages();
+            $messages = new Message();
             $result = $messages->search($q);
 
             // render empty results

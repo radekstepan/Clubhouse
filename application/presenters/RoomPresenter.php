@@ -75,7 +75,7 @@ class RoomPresenter extends Fari_ApplicationPresenter {
             $message->enter($roomId, $time, $this->user->getShortName());
         }
 
-        $messages = new Messages();
+        $messages = new Message();
         $this->bag->messages = $messages->get($roomId);
         // do we have some messages in the history?
         $this->bag->history = $messages->haveMore($roomId);

@@ -75,7 +75,7 @@ class GuestPresenter extends Fari_ApplicationPresenter {
     }
 
     public function renderGuest($roomId) {
-        $messages = new Messages();
+        $messages = new Message();
         $this->bag->messages = $messages->get($roomId);
 
         $this->bag->room = $this->room->getDescription($roomId);

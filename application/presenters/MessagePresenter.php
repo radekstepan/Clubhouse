@@ -85,7 +85,7 @@ class MessagePresenter extends Fari_ApplicationPresenter {
         if (Fari_Filter::isInt($roomId) && Fari_Filter::isInt($lastMessage)) {
             $time = mktime();
 
-            $messages = new Messages();
+            $messages = new Message();
             $messages = $messages->getLatest($lastMessage, $roomId);
 
             $system = new System();
@@ -115,7 +115,7 @@ class MessagePresenter extends Fari_ApplicationPresenter {
         if (Fari_Filter::isInt($messageId)) {
             $time = mktime();
 
-            $messages = new Messages();
+            $messages = new Message();
 
             try {
                 $result = $messages->switchHighlight($messageId);

@@ -17,7 +17,7 @@
  * @copyright Copyright (c) 2010 Radek Stepan
  * @package   Clubhouse\Models
  */
-class Transcripts extends Fari_Bag {
+class TranscriptListing extends Fari_Bag {
 
     function __construct($roomPermissionsString) {
         // setup db connection

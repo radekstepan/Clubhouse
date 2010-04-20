@@ -17,7 +17,7 @@
  * @copyright Copyright (c) 2010 Radek Stepan
  * @package   Clubhouse\Models
  */
-class Messages extends Fari_ApplicationModel {
+class Message extends Fari_ApplicationModel {
 
     function search($query) {
         return $this->db->select('messages JOIN rooms ON rooms.id=messages.room JOIN users ON users.id=messages.userId',
