@@ -17,7 +17,7 @@
  * @copyright Copyright (c) 2010 Radek Stepan
  * @package   Clubhouse\Models
  */
-class Speak extends Fari_ApplicationModel {
+class MessageSpeak extends Fari_ApplicationModel {
 
     /** @var if the room is locked, don't log the messages in a transcript */
     private $lockedRoom;

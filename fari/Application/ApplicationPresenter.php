@@ -44,7 +44,7 @@ abstract class Fari_ApplicationPresenter {
         $this->bag = new Fari_Bag();
 
         // initialization function called before anything else if is defined
-		if (method_exists($this->request->getPresenter() . '_Presenter', startup)) $this->startup();
+		if (method_exists($this->request->getPresenter(), startup)) $this->startup();
 	}
 
 	/**
@@ -95,19 +95,24 @@ abstract class Fari_ApplicationPresenter {
 
         // do we have a render function to call?
         // It is always called in our presenter!
-        if (method_exists($this->request->getPresenter() . '_Presenter', 'render' . $view['name'])) {
+        if (method_exists($this->request->getPresenter(), 'render' . $view['name'])) {
             // add the 'render' prefix to the view name
             $renderAction = 'render' . ucwords($view['name']);
 
             // reflect on the method
             $method = new Fari_ApplicationReflection(
-                $this->request->getPresenter() . '_Presenter', 'render' . $view['name']
+                $this->request->getPresenter(), 'render' . $view['name']
             );
 
             // set parameters
             if ($method->hasParameters()) $method->setParameters(&$parameters);
             // call the render method
             $method->call($this);
+        }
+
+        // strip prefix Presenter suffix :)
+        if (($suffixStart = stripos($view['prefix'], 'Presenter')) !== FALSE) {
+            $view['prefix'] = substr($view['prefix'], 0, $suffixStart);
         }
 
         // render file through a view
