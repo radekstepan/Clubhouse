@@ -22,7 +22,7 @@ if (!defined('APP_VERSION')) define('APP_VERSION', 'Clubhouse');
 // application salt to differentiate between Fari apps saving to a SESSION
 if (!defined('APP_SALT')) define('APP_SALT', '2538518944');
 // default presenter for the application (pages in a CMS)
-if (!defined('DEFAULT_PRESENTER')) define('DEFAULT_PRESENTER', 'lobby');
+if (!defined('DEFAULT_PRESENTER')) define('DEFAULT_PRESENTER', 'Lobby');
 // set to FALSE on live version of your application
 if (!defined('REPORT_ERR')) define('REPORT_ERR', TRUE);
 

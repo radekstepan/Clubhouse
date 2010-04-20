@@ -18,7 +18,7 @@
  * @copyright Copyright (c) 2010 Radek Stepan
  * @package   Clubhouse\Presenters
  */
-class Message_Presenter extends Fari_ApplicationPresenter {
+class MessagePresenter extends Fari_ApplicationPresenter {
 
     private $user = FALSE;
     private $room;

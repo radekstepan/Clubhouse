@@ -62,13 +62,13 @@ class Fari_ApplicationRouter {
         include($presenterFile);
         
 		// from variable to instance of an object
-        $class = ucwords($route->presenter) . '_Presenter';
+        $class = ucwords($route->presenter);
 		$presenter = @new $class(&$route);
 		
 		// check that the Presenter object extends Fari_ApplicationPresenter
 		try { if (!$presenter instanceof Fari_ApplicationPresenter) {
 			throw new Fari_Exception('Presenter object ' . $route->presenter .
-						 '_Presenter does not extend Fari_ApplicationPresenter.'); }
+						 ' does not extend Fari_ApplicationPresenter.'); }
 		} catch (Fari_Exception $exception) { $exception->fire(); }
 		
 		// Presenter is set, now check we can call the Action in it with the appropriate prefix
@@ -77,7 +77,7 @@ class Fari_ApplicationRouter {
 		}
 
         // reflect the action we are calling
-        $method = new Fari_ApplicationReflection($route->presenter . '_Presenter', $route->action);
+        $method = new Fari_ApplicationReflection($route->presenter, $route->action);
         // ...and optionally pass variable number of parametres
         if ($method->hasParameters()) $method->setParameters(&$route->parameters);
         // call the action (method) in the Presenter

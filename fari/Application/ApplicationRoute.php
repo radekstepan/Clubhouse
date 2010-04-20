@@ -25,7 +25,7 @@ class Fari_ApplicationRoute extends Fari_Bag {
 
     /**#@+ default action and error presenter */
     const DEFAULT_ACTION = 'actionIndex';
-	const ERROR_PRESENTER = 'error404';
+	const ERROR_PRESENTER = 'Error404';
     /**#@-*/
 
 	/**
@@ -40,10 +40,10 @@ class Fari_ApplicationRoute extends Fari_Bag {
             $this->setDefaultPresenter();
             $this->setDefaultAction();
         } else if (empty($this->route[1])) {
-            $this->presenter = $this->route[0];
+            $this->presenter = ucwords($this->route[0]) . 'Presenter';
             $this->setDefaultAction();
         } else {
-            $this->presenter = $this->route[0];
+            $this->presenter = ucwords($this->route[0]) . 'Presenter';
             $this->action = 'action' . ucwords($this->route[1]);
             
             $this->parameters = array_slice($this->route, 2);
@@ -54,7 +54,7 @@ class Fari_ApplicationRoute extends Fari_Bag {
 	 * Default presenter set for the application.
 	 */
     public function setDefaultPresenter() {
-        $this->presenter = DEFAULT_PRESENTER;
+        $this->presenter = DEFAULT_PRESENTER . 'Presenter';
     }
 
 	/**

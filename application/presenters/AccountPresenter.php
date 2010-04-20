@@ -18,7 +18,7 @@
  * @copyright Copyright (c) 2010 Radek Stepan
  * @package   Clubhouse\Presenters
  */
-class Account_Presenter extends Fari_ApplicationPresenter {
+class AccountPresenter extends Fari_ApplicationPresenter {
 
     private $accounts;
 

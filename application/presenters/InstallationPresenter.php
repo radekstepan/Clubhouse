@@ -18,7 +18,7 @@
  * @copyright Copyright (c) 2010 Radek Stepan
  * @package   Clubhouse\Presenters
  */
-class Installation_Presenter extends Fari_ApplicationPresenter {
+class InstallationPresenter extends Fari_ApplicationPresenter {
 
     public function startup() {
         if (Fari_DbSqLite::isDbWritable()) $this->response->redirect('/error404/');
