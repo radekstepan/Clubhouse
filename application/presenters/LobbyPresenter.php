@@ -24,12 +24,20 @@ class LobbyPresenter extends Fari_ApplicationPresenter {
 	
 	public function startup() {
         // is user authenticated? guests not allowed
-        $this->user = new User();
-        if (!$this->user->isAuthenticated() OR $this->user->isGuest()) {
-            // we might time out in the lobby trying to fetch room listing
-            if ($this->request->isAjax()) $this->response('bye', 'json');
-
-            $this->response->redirect('/login/');
+        try {
+            $this->user = new User(array('admin', 'registered'));
+        } catch (UserNotAuthenticatedException $e) {
+            if ($this->request->isAjax()) {
+                $this->response('bye', 'json');
+            } else {
+                $this->response->redirect('/login/');
+            }
+        } catch (UserNotAuthorizedException $e) {
+            if ($this->request->isAjax()) {
+                $this->response('bye', 'json');
+            } else {
+                $this->response->redirect('/login/');
+            }
         }
 	}
 

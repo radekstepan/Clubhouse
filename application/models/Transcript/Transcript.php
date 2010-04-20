@@ -15,7 +15,7 @@
  * Transcript reading.
  *
  * @copyright Copyright (c) 2010 Radek Stepan
- * @package   Clubhouse\Models
+ * @package   Clubhouse\Models\Transcript
  */
 class Transcript extends Fari_Bag {
 
@@ -28,7 +28,7 @@ class Transcript extends Fari_Bag {
             array('date' => $date, 'room_transcripts.deleted' => 0, 'room' => $roomId));
 
         // nothing found, throw an exception
-        if (!is_array($this->details)) throw new NotFoundException();
+        if (!is_array($this->details)) throw new TranscriptNotFoundException();
         
         // get users
         $this->users = $this->getUsers($date, $roomId);

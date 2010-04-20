@@ -12,10 +12,10 @@
 
 
 /**
- * User authentication & permissions.
+ * User authentication & permissions checking, identity....
  *
  * @copyright Copyright (c) 2010 Radek Stepan
- * @package   Clubhouse\Models
+ * @package   Clubhouse\Models\User
  */
 class User extends Fari_AuthenticatorSimple {
 
@@ -29,19 +29,19 @@ class User extends Fari_AuthenticatorSimple {
     /**
      * Create object for authenticated user
      */
-    function __construct() {
+    function __construct($roles=NULL) {
         $this->db = Fari_Db::getConnection();
         parent::__construct($this->db);
 
         // no entry, we are not logged in, fail the constructor
-        if (!$this->isAuthenticated()) return FALSE;
+        if (!$this->isAuthenticated()) throw new UserNotAuthenticatedException();
 
         // fetch the database entry for us
         $dbUser = $this->db->selectRow('users', 'id, role, name, surname, short, long, invitation',
             array('username' => $this->getCredentials()));
         
         // user has been inactivated, throw them away
-        if ($dbUser['role'] == 'inactive') return FALSE;
+        if ($dbUser['role'] == 'inactive') throw new UserNotAuthenticatedException();
         
         // ORM much? effectively map db entry into an identity Fari_Bag object
         $this->identity = new Fari_Bag();
@@ -58,6 +58,25 @@ class User extends Fari_AuthenticatorSimple {
             'rooms.id, name',
             array('user' => $dbUser['id']), 'room ASC');
         foreach($q as $room) $this->inRoom[$room['name']] = $room['id'];
+
+        // optionally check the roles
+        if (isset($roles)) {
+            if (!$this->isAuthorized(&$roles, $dbUser['role'])) throw new UserNotAuthorizedException();
+        }
+    }
+
+    private function isAuthorized($roles, $ourRole) {
+        if (is_array($roles)) {
+            foreach ($roles as $role) {
+                if ($ourRole === $role) {
+                    return TRUE;
+                }
+            }
+        } else {
+            if ($ourRole === $roles) return TRUE;
+        }
+        
+        return FALSE;
     }
 
     function getId() {
@@ -111,7 +130,7 @@ class User extends Fari_AuthenticatorSimple {
 	 * Can the user enter/speak in a room?
      *
      * @param integer $roomId An integer with room identifier (assertion!)
-     * @return boolean TRUE if we can enter the room
+     * @return boolean TRUE if we can enter the room otherwise throws UserNotAuthorizedException
 	 */
     function canEnter($roomId) {
         // admin has access everywhere
@@ -123,13 +142,17 @@ class User extends Fari_AuthenticatorSimple {
         if ($room['guest'] != '0' && $this->isGuest()) return TRUE;
 
         // locked for guests and we don't have permissions... we definitely can't enter
-        if (!$this->havePermissions($roomId)) return FALSE;
+        if (!$this->havePermissions($roomId)) throw new UserNotAuthorizedException();
 
         // we might have permissions but room might be locked so check if we are in already
         if ($this->inRoom($roomId)) return TRUE;
 
         // fail the room is locked...
-        return ($room['locked'] == '1') ? FALSE : TRUE;
+        if ($room['locked'] == '1') {
+            throw new UserNotAuthorizedException();
+        } else {
+            TRUE;
+        }
     }
 
     /**

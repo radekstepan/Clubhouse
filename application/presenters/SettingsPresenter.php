@@ -24,10 +24,16 @@ class SettingsPresenter extends Fari_ApplicationPresenter {
     private $settings;
 	
 	public function startup() {
-        // is user authenticated? guests not allowed
-        $this->user = new User();
-        if (!$this->user->isAuthenticated() OR !$this->user->isAdmin()) {
+        // is user authenticated? account owner only
+        try {
+            $this->user = new User('admin');
+
+        } catch (UserNotAuthenticatedException $e) {
             $this->response->redirect('/login/');
+
+        } catch (UserNotAuthorizedException $e) {
+            $this->render('Error404/error404');
+
         }
 
         $this->settings = new Settings();
@@ -64,7 +70,7 @@ class SettingsPresenter extends Fari_ApplicationPresenter {
 
                 try {
                     $this->settings->deleteRoom($roomId);
-                } catch (NotFoundException $e) {
+                } catch (RoomNotFoundException $e) {
                     //
                 }
                 
@@ -84,7 +90,3 @@ class SettingsPresenter extends Fari_ApplicationPresenter {
     }
 
 }
-
-
-
-class NotFoundException extends Exception {}

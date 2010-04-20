@@ -18,7 +18,7 @@ if (!isset($_SESSION)) session_start();
 
 // Step 1a: Define absolute environment values
 // set so that we can check if PHP pages have been accessed directly
-if (!defined('FARI')) define('FARI', 'Fari Framework 2.1.1.1 (Apr 20, 2010)');
+if (!defined('FARI')) define('FARI', 'Fari Framework 2.2.0.0 (Apr 20, 2010)');
 
 // get absolute pathname and define it as a constant (server install path)
 if (!defined('BASEPATH')) define('BASEPATH', dirname(__FILE__));

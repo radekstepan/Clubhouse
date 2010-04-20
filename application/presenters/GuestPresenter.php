@@ -19,12 +19,11 @@
  * @package   Clubhouse\Presenters
  */
 class GuestPresenter extends Fari_ApplicationPresenter {
-
+    
     private $guestUser;
     private $room;
 	
 	public function startup() {
-        $this->guestUser = new User();
         $this->room = new Room();
     }
 
@@ -38,47 +37,62 @@ class GuestPresenter extends Fari_ApplicationPresenter {
 	 * Display the room from a guest's perspective
 	 */
 	public function actionIndex($guestCode) {
-        $room = $this->room->getGuestRoom($guestCode = Fari_Escape::text($guestCode));
-        
-        if (!empty($room)) {
+        try {
+            // get the room
+            $this->room->getGuestRoom($guestCode = Fari_Escape::text($guestCode));
+
             // is user authenticated?
-            if (!$this->guestUser->isAuthenticated() OR !$this->guestUser->canEnter($room['id'])) {
-                $this->bag->code = $guestCode;
-                
-                // show a form to enter a name for the new guest
-                $this->render('account/guest');
+            $this->guestUser = new User();
+            // is user authorized?
+            $this->guestUser->canEnter($this->room['id']);
+
+        // the room does not exist
+        } catch (RoomNotFoundException $e) {
+            $this->render('room/invalid');
+
+        // we haven't signed in
+        } catch (UserNotAuthenticatedException $e) {
+            $this->bag->code = $guestCode;
+            // show a form to enter a name for the new guest
+            $this->render('account/guest');
+
+        // we cannot enter this room
+        } catch (UserNotAuthorizedException $e) {
+            $this->bag->code = $guestCode;
+            // show a form to enter a name for the new guest
+            $this->render('account/guest');
+            
+        }
+                    
+        // we are already in
+        $time = mktime();
+
+        // is the user already in the room?
+        if (!$this->guestUser->inRoom($this->room['id'])) {
+            // not in the room... is it locked?
+            if ($this->room['locked']) {
+                $system = new System();
+                $this->render('room/locked');
             } else {
-                // we are already in
-                $time = mktime();
+                // enter them into the room
+                $guestUser->enterRoom($this->room['id'], $time);
 
-                // is the user already in the room?
-                if (!$this->guestUser->inRoom($room['id'])) {
-                    // not in the room... is it locked?
-                    if ($room['locked']) {
-                        $system = new System();
-                        $this->render('room/locked');
-                    } else {
-                        // enter them into the room
-                        $this->guestUser->enterRoom($room['id'], $time);
-
-                        // say that the user has entered
-                        $message = new MessageSpeak();
-                        $message->enter($room['id'], $time, $this->guestUser->getShortName());
-                    }
-                }
-                
-                // all other fails captured...
-                // show a 'guest' view
-                $this->render('room/guest', $room['id']);
+                // say that the user has entered
+                $message = new MessageSpeak();
+                $message->enter($this->room['id'], $time, $this->guestUser->getShortName());
             }
-        } else $this->render('room/invalid');
+        }
+
+        // all other fails captured...
+        // show a 'guest' view
+        $this->render('room/guest');
     }
 
-    public function renderGuest($roomId) {
+    public function renderGuest() {
         $messages = new Message();
-        $this->bag->messages = $messages->get($roomId);
+        $this->bag->messages = $messages->get($this->room['id']);
 
-        $this->bag->room = $this->room->getDescription($roomId);
+        $this->bag->room = $this->room->getDescription($this->room['id']);
 
         $this->bag->userId = $this->guestUser->getId();
         $this->bag->shortName = $this->guestUser->getShortName();

@@ -24,10 +24,16 @@ class UsersPresenter extends Fari_ApplicationPresenter {
     private $accounts;
 	
 	public function startup() {
-        // is user authenticated? guests not allowed
-        $this->user = new User();
-        if (!$this->user->isAuthenticated() OR !$this->user->isAdmin()) {
+        // is user authenticated? account owner only
+        try {
+            $this->user = new User('admin');
+
+        } catch (UserNotAuthenticatedException $e) {
             $this->response->redirect('/login/');
+
+        } catch (UserNotAuthorizedException $e) {
+            $this->render('Error404/error404');
+
         }
 
         $this->accounts = new Accounts();
@@ -122,7 +128,7 @@ class UsersPresenter extends Fari_ApplicationPresenter {
             if (Fari_Filter::isInt($userId) && $userId !=  $adminUser['id']) {
                 try {
                     $this->accounts->deleteUser($userId);
-                } catch (NotFoundException $e) {
+                } catch (UserNotFoundException $e) {
                     //
                 }
             }
@@ -132,7 +138,3 @@ class UsersPresenter extends Fari_ApplicationPresenter {
     }
 
 }
-
-
-
-class NotFoundException extends Exception {}

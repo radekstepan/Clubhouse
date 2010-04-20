@@ -24,12 +24,18 @@ class InvitationsPresenter extends Fari_ApplicationPresenter {
     private $accounts;
 
     public function startup() {
-        // is user authenticated? guests not allowed
-        $this->user = new User();
-        if (!$this->user->isAuthenticated() OR !$this->user->isAdmin()) {
-            $this->response->redirect('/login/');
-        }
+        // is user authenticated? account owner only
+        try {
+            $this->user = new User('admin');
 
+        } catch (UserNotAuthenticatedException $e) {
+            $this->response->redirect('/login/');
+
+        } catch (UserNotAuthorizedException $e) {
+            $this->render('Error404/error404');
+
+        }
+        
         $this->accounts = new Accounts();
     }
 
@@ -61,7 +67,7 @@ class InvitationsPresenter extends Fari_ApplicationPresenter {
                 $mail = new Mailer();
                 try {
                     $mail->sendInvitation();
-                } catch (NotFoundException $e) {
+                } catch (UserNotFoundException $e) {
                     $this->response->redirect('/error404/');
                 }
 
@@ -76,7 +82,3 @@ class InvitationsPresenter extends Fari_ApplicationPresenter {
 	}
     
 }
-
-
-
-class NotFoundException extends Exception {}

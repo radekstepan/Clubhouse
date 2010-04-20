@@ -15,7 +15,7 @@
  * List and delete rooms.
  *
  * @copyright Copyright (c) 2010 Radek Stepan
- * @package   Clubhouse\Models
+ * @package   Clubhouse\Models\Settings
  */
 class Settings extends Fari_ApplicationModel {
 
@@ -35,7 +35,7 @@ class Settings extends Fari_ApplicationModel {
             array('deleted' => 1, 'guest' => 0, 'locked' => 1),
             array('id' => $roomId)
         );
-        if ($result != 1) throw new NotFoundException();
+        if ($result != 1) throw new RoomNotFoundException();
 
         // inactivate transcript entries... the related messages are still accessible
         $this->db->update('room_transcripts', array('deleted' => 1), array('room' => $roomId));

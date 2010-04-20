@@ -15,7 +15,7 @@
  * Invitations mailer.
  *
  * @copyright Copyright (c) 2010 Radek Stepan
- * @package   Clubhouse\Models
+ * @package   Clubhouse\Models\Mailer
  */
 class Mailer {
 
@@ -31,7 +31,7 @@ class Mailer {
         $user = $users->findFirst('id DESC')->where(array('role' => 'invited'));
         
         // have we actually retrieved the user?
-        if (!Fari_Filter::isInt($user->id)) throw new NotFoundException();
+        if (!Fari_Filter::isInt($user->id)) throw new UserNotFoundException();
 
         // form the email
         $this->mailer->addTo($user->email)->addFrom('radek.stepan@gmail.com', 'Clubhouse');

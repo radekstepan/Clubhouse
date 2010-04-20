@@ -15,7 +15,7 @@
  * Transcript listing.
  *
  * @copyright Copyright (c) 2010 Radek Stepan
- * @package   Clubhouse\Models
+ * @package   Clubhouse\Models\Transcript
  */
 class TranscriptListing extends Fari_Bag {
 
@@ -35,7 +35,7 @@ class TranscriptListing extends Fari_Bag {
 
         // count of all items
         if (($this->count = count($this->all)) == 0) {
-            throw new EmptyException();
+            throw new TranscriptEmptyException();
         }
     }
 

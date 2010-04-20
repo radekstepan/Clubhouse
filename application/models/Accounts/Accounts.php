@@ -15,7 +15,7 @@
  * Invitations, permissions deleting users.
  *
  * @copyright Copyright (c) 2010 Radek Stepan
- * @package   Clubhouse\Models
+ * @package   Clubhouse\Models\Accounts
  */
 class Accounts extends Fari_ApplicationModel {
 
@@ -79,7 +79,7 @@ class Accounts extends Fari_ApplicationModel {
     function setInvitedUserCredentials($username, $password, $invitationCode) {
         $result = $this->db->update('users', array('invitation' => '', 'username' => $username,
                 'password' => sha1($password)), array('invitation' => $invitationCode));
-        if ($result != 1) throw new NotFoundException();
+        if ($result != 1) throw new UserNotFoundException();
     }
     
     
@@ -91,19 +91,25 @@ class Accounts extends Fari_ApplicationModel {
     function deleteUser($userId) {
         // inactivate them
         $result = $this->db->update('users', array('role' => 'inactive'), array('id' => $userId));
-        if ($result != 1) throw new NotFoundException();
+        if ($result != 1) throw new UserNotFoundException();
 
         // disallow them
         $this->db->delete('user_permissions', array('user' => $userId));
 
-        // leave them, nicely.. with a message :)
-        $leaveThis = $this->db->selectRow('room_users JOIN users on room_users.user = users.id', 'room, short',
+        // optionally leave them from a room
+        $this->leaveRoom($userId);
+    }
+
+    private function leaveRoom($userId) {
+        $result = $this->db->selectRow('room_users JOIN users on room_users.user = users.id', 'room, short',
             array('user' => $userId));
-        if (!empty($leaveThis)) {
+
+        if (!empty($result)) {
             $time = mktime();
 
-            $message = new MessageSpeak($leaveThis['room'], $time);
-            $message->leave($leaveThis['room'], $time, $leaveThis['short']);
+            $message = new MessageSpeak($result['room'], $time);
+            $message->leave($result['room'], $time, $result['short']);
+
             // delete in one big swoop
             $this->db->delete('room_users', array('user' => $userId));
         }

@@ -15,7 +15,7 @@
  * Fetch or search messages.
  *
  * @copyright Copyright (c) 2010 Radek Stepan
- * @package   Clubhouse\Models
+ * @package   Clubhouse\Models\Message
  */
 class Message extends Fari_ApplicationModel {
 
@@ -66,7 +66,7 @@ class Message extends Fari_ApplicationModel {
             return $highlight;
         }
         
-        throw new NotFoundException();
+        throw new MessageNotFoundException();
     }
 
 }

@@ -25,8 +25,9 @@ class FilePresenter extends Fari_ApplicationPresenter {
 	
 	public function startup() {
         // is user authenticated?
-        $this->user = new User();
-        if (!$this->user->isAuthenticated()) {
+        try {
+            $this->user = new User();
+        } catch (UserNotAuthenticatedException $e) {
             $this->response->redirect('/login/');
         }
 	}
@@ -41,6 +42,7 @@ class FilePresenter extends Fari_ApplicationPresenter {
 
     /**
 	 * File upload
+     * FIXME anyone can upload to another room!
 	 */
 	public function actionUpload() {
         $roomId = $this->request->getPost('roomId');
@@ -108,7 +110,7 @@ class FilePresenter extends Fari_ApplicationPresenter {
         if (!empty($file)) {
             // respond with a file download
             $this->response($file, 'download');
-        } else $this->render('error404/error404');
+        } else $this->render('Error404/error404');
     }
 
 }

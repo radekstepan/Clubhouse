@@ -27,7 +27,7 @@ class AuthPresenter extends Fari_ApplicationPresenter {
     }
 	
 	public function actionIndex($p) {
-        $this->render('error404/error404');
+        $this->render('Error404/error404');
     }
 
 
@@ -44,16 +44,20 @@ class AuthPresenter extends Fari_ApplicationPresenter {
         if ($this->request->getPost('username')) {
             $username = Fari_Decode::accents($this->request->getPost('username'));
             $password = Fari_Decode::accents($this->request->getPost('password'));
-            
-            $this->user = new User();
-		    if ($this->user->authenticate($username, $password, $this->request->getPost('token'))) {
-                $this->response->redirect('/');
-            } else {
+
+            try {
+                $this->user = new UserLogin($username, $password, $this->request->getPost('token'));
+
+            } catch (UserNotAuthenticatedException $e) {
                 Fari_Message::fail('Sorry, your username or password wasn\'t recognized');
-                $this->bag->messages = Fari_Message::get();
+
             }
+
+            $this->response->redirect('/');
         }
-        
+
+        $this->bag->messages = Fari_Message::get();
+
 		// create token & display login form
 		$this->bag->token = Fari_FormToken::create();
 		$this->render();
@@ -69,10 +73,15 @@ class AuthPresenter extends Fari_ApplicationPresenter {
 	 * Destroy user session
 	 */
     public function actionLogout() {
-        $this->user = new User();
+        try {
+            // we might not be signed in actually
+            $this->user = new User();
+        } catch (UserNotAuthenticatedException $e) {
+            Fari_Message::success('You weren\'t logged in in the first place');
+        }
 
         // as we are logging out, leave us from all rooms
-        if ($this->user->isAuthenticated()) {
+        if ($this->user != NULL) {
             $inRooms = $this->user->inRooms();
             if (!empty($inRooms)) {
                 
@@ -86,13 +95,14 @@ class AuthPresenter extends Fari_ApplicationPresenter {
                 $room = new Room();
                 $room->removeParticipant($this->user->getId());
             }
+
+            Fari_Message::success('You have been logged out');
+
+            $this->user->signOut();
         }
 
-        Fari_Message::success('You have been logged out');
         Fari_Message::get();
 
-		$this->user->signOut();
-        
 		$this->render('login');
 	}
 

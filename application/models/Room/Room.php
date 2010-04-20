@@ -15,7 +15,7 @@
  * Create, poll and edit rooms.
  *
  * @copyright Copyright (c) 2010 Radek Stepan
- * @package   Clubhouse\Models
+ * @package   Clubhouse\Models\Room
  */
 class Room extends Fari_ApplicationModel {
 
@@ -39,7 +39,12 @@ class Room extends Fari_ApplicationModel {
     }
 
     function getGuestRoom($guestCode) {
-        return $this->db->selectRow('rooms', 'id, name, description, locked', array('guest' => $guestCode));
+        $result = $this->db->selectRow('rooms', 'id, name, description, locked', array('guest' => $guestCode));
+        if (empty($result)) {
+            throw new RoomNotFoundException();
+        } else {
+            return $result;
+        }
     }
 
     function removeParticipant($userId, $roomId=NULL) {
@@ -58,7 +63,7 @@ class Room extends Fari_ApplicationModel {
     function updateUserActivity($roomId, $time, $userId) {
         // update the activity for the user
         $id = $this->db->update('room_users', array('timestamp' => $time), array('room' => $roomId, 'user' => $userId));
-        if ($id != 1) throw new NotFoundException();
+        if ($id != 1) throw new UserNotFoundException();
     }
 
 

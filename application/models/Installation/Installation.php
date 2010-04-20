@@ -15,7 +15,7 @@
  * Install the SQLite database.
  *
  * @copyright Copyright (c) 2010 Radek Stepan
- * @package   Clubhouse\Models
+ * @package   Clubhouse\Models\Installation
  */
 class Installation extends Fari_DbSqLite {
 

@@ -15,7 +15,7 @@
  * File upload.
  *
  * @copyright Copyright (c) 2010 Radek Stepan
- * @package   Clubhouse\Models
+ * @package   Clubhouse\Models\Upload
  */
 class Upload extends Fari_Bag {
 
@@ -52,7 +52,7 @@ class Upload extends Fari_Bag {
         fclose($stream);
         
         // create a thumbnail if required
-        $thumbnail = new Thumbnail($file);
+        $thumbnail = new UploadThumbnail($file);
         if ($thumbnail->isCreated()) {
             // yes we do have one
             $this->thumbnail = TRUE;

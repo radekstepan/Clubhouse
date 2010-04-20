@@ -24,8 +24,9 @@ class SearchPresenter extends Fari_ApplicationPresenter {
 	
 	public function startup() {
         // is user authenticated?
-        $this->user = new User();
-        if (!$this->user->isAuthenticated()) {
+        try {
+            $this->user = new User();
+        } catch (UserNotAuthenticatedException $e) {
             $this->response->redirect('/login/');
         }
 	}

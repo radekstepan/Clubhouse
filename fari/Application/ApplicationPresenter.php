@@ -163,7 +163,7 @@ abstract class Fari_ApplicationPresenter {
         // get the prefix of the view if present
         if (($slash = stripos($viewName, '/')) !== FALSE) {
             // the prefix Presenter named directory where our view resides
-            $prefix = substr($viewName, 0, $slash);
+            $prefix = ucwords(substr($viewName, 0, $slash));
             // the actual name of the view we have requested
             $viewName = substr($viewName, $slash + 1);
         } else {

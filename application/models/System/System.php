@@ -15,7 +15,7 @@
  * Gets system stats, performs cleanups.
  *
  * @copyright Copyright (c) 2010 Radek Stepan
- * @package   Clubhouse\Models
+ * @package   Clubhouse\Models\System
  */
 class System extends Fari_ApplicationModel {
 
@@ -63,7 +63,11 @@ class System extends Fari_ApplicationModel {
 
     function isRoom($roomId) {
         $result = $this->db->selectRow('rooms', 'id', array('id' => $roomId, 'deleted' => 0));
-        return (!empty($result));
+        if (empty($result)) {
+            throw new RoomNotFoundExcception();
+        } else {
+            return $result;
+        }
     }
 
     function userCount() {

@@ -15,7 +15,7 @@
  * Main message sending/creating class.
  *
  * @copyright Copyright (c) 2010 Radek Stepan
- * @package   Clubhouse\Models
+ * @package   Clubhouse\Models\Message
  */
 class MessageSpeak extends Fari_ApplicationModel {
 
@@ -63,17 +63,6 @@ class MessageSpeak extends Fari_ApplicationModel {
             }
 
             if ($result == NULL) {
-                // determine if this is the first message of the day...
-                //$newDay = date("j M", $time); $year = date("y", $time); // ha a Y21K bug ;)
-                // ... in an unlocked room
-                //$result = $this->db->selectRow('messages', 'user', array('room' => $roomId, 'date' => $date,
-                //        'locked' => '0', 'type' => 'text'));
-                //if (empty($result)) {
-                //    // new message of the day, insert transcript entry
-                //    $this->db->insert('room_transcripts', array('room' => $roomId, 'date' => $date, 'deleted' => 0,
-                //            'niceDate' => date("l, F j", $time)));
-                //}
-
                 // update last room activity, we need for correct timestamping in a locked room
                 $this->db->update('rooms', array('activity' => $this->time), array('id' => $roomId));
 

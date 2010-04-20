@@ -17,7 +17,7 @@
  * @copyright Copyright (c) 2010 Radek Stepan
  * @package   Clubhouse\Models\Thumbnail
  */
-class Thumbnail extends Fari_Bag {
+class UploadThumbnail extends Fari_Bag {
 
     /**#@+ maximum width of the thumbnail */
 	const THUMB_WIDTH = 300;

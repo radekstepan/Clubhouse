@@ -26,11 +26,18 @@ class MessagePresenter extends Fari_ApplicationPresenter {
 	public function startup() {
         // is this Ajax?
         if ($this->request->isAjax()) {
-            // is user authenticated and allowed to speak?
-            $this->user = new User();
-            if (!$this->user->isAuthenticated() OR !$this->user->canEnter($roomId)) {
+            // is user authenticated?
+            try {
+                $this->user = new User();
+                $this->user->canEnter($roomId);
+                
+            } catch (UserNotAuthenticatedException $e) {
                 // user is fetching new messages... not for long
                 $this->response('bye', 'json');
+
+            } catch (UserNotAuthorizedException $e) {
+                $this->response('bye', 'json');
+                
             }
 
             $this->room = new Room();
@@ -64,7 +71,7 @@ class MessagePresenter extends Fari_ApplicationPresenter {
             // the message might be saved under wrong room id, but activity updater will kick us...
             try {
                 $this->room->updateUserActivity($roomId, $time, $this->user->getId());
-            } catch (NotFoundException $e) {
+            } catch (UserNotFoundException $e) {
                 $this->response('bye', 'json');
             }
         }
@@ -92,7 +99,7 @@ class MessagePresenter extends Fari_ApplicationPresenter {
 
             try {
                 $this->room->updateUserActivity($roomId, $time, $this->user->getId());
-            } catch (NotFoundException $e) {
+            } catch (UserNotFoundException $e) {
                 $this->response('bye', 'json');
             }
 
@@ -119,7 +126,7 @@ class MessagePresenter extends Fari_ApplicationPresenter {
 
             try {
                 $result = $messages->switchHighlight($messageId);
-            } catch (NotFoundException $e) {
+            } catch (MessageNotFoundException $e) {
                 // you mess with us... we mess with you
                 $this->response('bye', 'json');
             }
@@ -129,7 +136,3 @@ class MessagePresenter extends Fari_ApplicationPresenter {
     }
 
 }
-
-
-
-class NotFoundException extends Exception {}

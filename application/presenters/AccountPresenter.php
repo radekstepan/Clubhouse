@@ -27,7 +27,7 @@ class AccountPresenter extends Fari_ApplicationPresenter {
     }
 
 	public function actionIndex($p) {
-        $this->render('error404/error404');
+        $this->render('Error404/error404');
     }
 
 
@@ -120,7 +120,7 @@ class AccountPresenter extends Fari_ApplicationPresenter {
             // set the new credentials
             try {
                 $this->accounts->setInvitedUserCredentials($username, $password, $invitationCode);
-            } catch (NotFoundException $e) {
+            } catch (UserNotFoundException $e) {
                 $this->render('error');
             }
 
@@ -134,7 +134,3 @@ class AccountPresenter extends Fari_ApplicationPresenter {
 	}
     
 }
-
-
-
-class NotFoundException extends Exception {}
