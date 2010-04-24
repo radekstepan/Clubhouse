@@ -21,10 +21,11 @@ class MessageSpeak extends Fari_ApplicationModel {
 
     /** @var if the room is locked, don't log the messages in a transcript */
     private $lockedRoom;
-
+    private $locked;
     private $time;
-
+    private $niceTime;
     private $date;
+    private $roomId;
 
 	/**
 	 * Constructor, creating a timestamp type message (whenever any action happens)
@@ -43,46 +44,69 @@ class MessageSpeak extends Fari_ApplicationModel {
 
         // we don't want to timestamp a room as active if a user is leaving for example...
         if (isset($roomId)) {
-            // update room activity
-            $this->db->update('rooms', array('timestamp' => $time), array('id' => $roomId));
+            $this->roomId = $roomId;
 
-            // do we have a message in the last 5 minutes?
-            $this->time = SystemTime::roundTimestamp($time);
-
-            $result = $this->db->selectRow('rooms', 'id, locked', "id=$roomId AND activity >= {$this->time}");
-            $this->lockedRoom = ($result['locked'] == 1) ? '1' : '0';
-
-            $this->date = SystemTime::timestampToDate($this->time);
-            $niceTime = SystemTime::timestampToTime($this->time);
-
-            // hide this message?
-            if ($hide > 0) {
-                $locked = '1';
-            } else {
-                $locked = $this->lockedRoom;
-            }
-
-            if ($result == NULL) {
-                // update last room activity, we need for correct timestamping in a locked room
-                $this->db->update('rooms', array('activity' => $this->time), array('id' => $roomId));
-
-                $this->lastId = $this->db->insert('messages', array('room' => $roomId, 'type' => 'timestamp',
-                        'text' => $niceTime, 'date' => $this->date, 'user' => '', 'locked' => $locked));
-            } else {
-                // there might have been a message in the last 5, but in a locked room
-                if ($this->lockedRoom == '0') { // ... now that it's unlocked
-                    $result = $this->db->select('messages', 'id, locked',
-                        "room=$roomId AND date='{$this->date}' AND text='$niceTime' AND type='timestamp' AND locked='0'");
-                    // there is such a message, created in a locked room
-                    if (empty($result)) {
-                        // create one in the unlocked room :)
-                        $this->db->insert('messages', array('room' => $roomId, 'type' => 'timestamp',
-                            'text' => $niceTime, 'date' => $this->date, 'user' => '', 'locked' => $locked));
-                    }
-                }
-            }
+            $this->timestampRoom($time, $hide);
         }
 	}
+
+    private function timestampRoom($time, $hide) {
+        // update room activity
+        $this->updateRoomTimestamp($this->roomId, $time);
+
+        // do we have a message in the last 5 minutes?
+        $this->time = SystemTime::roundTimestamp($time);
+
+        $result = $this->db->selectRow('rooms', 'id, locked', "id={$this->roomId} AND activity >= {$this->time}");
+        $this->lockedRoom = ($result['locked'] == 1) ? '1' : '0';
+
+        $this->date = SystemTime::timestampToDate($this->time);
+        $this->niceTime = SystemTime::timestampToTime($this->time);
+
+        // hide this message?
+        if ($hide > 0) {
+            $this->locked = '1';
+        } else {
+            $this->locked = $this->lockedRoom;
+        }
+
+        if ($result == NULL) {
+            // update last room activity, we need for correct timestamping in a locked room
+            $this->updateRoomActivity();
+            $this->messageTimestamp();
+        } else {
+            // there might have been a message in the last 5, but in a locked room
+            if ($this->lockedRoom == '0') { // ... now that it's unlocked
+                $this->messageUnlockedTimestamp();
+            }
+        }
+    }
+
+    private function updateRoomTimestamp() {
+        $this->db->update('rooms', array('timestamp' => $this->time), array('id' => $this->roomId));
+    }
+
+    private function updateRoomActivity() {
+        // update last room activity, we need for correct timestamping in a locked room
+        $this->db->update('rooms', array('activity' => $this->time), array('id' => $this->roomId));
+    }
+
+    private function messageTimestamp() {
+        $this->lastId = $this->db->insert('messages', array('room' => $this->roomId, 'type' => 'timestamp',
+            'text' => $this->niceTime, 'date' => $this->date, 'user' => '', 'locked' => $this->locked));
+    }
+
+    private function messageUnlockedTimestamp() {
+        $result = $this->db->select('messages', 'id, locked',
+            "room={$this->roomId} AND date='{$this->date}' AND text='{$this->niceTime}'
+                 AND type='timestamp' AND locked='0'");
+        // there is such a message, created in a locked room
+        if (empty($result)) {
+            // create one in the unlocked room :)
+            $this->db->insert('messages', array('room' => $this->roomId, 'type' => 'timestamp',
+                'text' => $this->niceTime, 'date' => $this->date, 'user' => '', 'locked' => $this->locked));
+        }
+    }
 
 	/**
 	 * Plain old boring text message
@@ -96,18 +120,50 @@ class MessageSpeak extends Fari_ApplicationModel {
 	 */
     public function text($roomId, $time, $shortName, $userId, $text) {
         // determine if this is the first message of the day...
+        $this->newTranscript($roomId);
+
+        // code in the message
+        $text = $this->textCode($text);
+
+        $text = $this->textLinks($text);
+
+        $date = SystemTime::timestampToDate($time);
+
+        $this->db->insert('messages', array('text' => $text, 'user' => $shortName, 'room' => $roomId, 'type' => 'text',
+            'userId' => $userId, 'date' => $date, 'locked' => $this->lockedRoom, 'highlight' => 0));
+
+        // is this the first time we are saying something today?
+        $this->newTranscriptUser($roomId, $userId, $date);
+    }
+
+    private function newTranscript($roomId) {
         // ... in an unlocked room
         $result = $this->db->selectRow('messages', 'user', array('room' => $roomId, 'date' => $this->date,
                 'locked' => '0', 'type' => 'text'));
         if (empty($result)) {
             // new message of the day, insert transcript entry
-            $this->db->insert('room_transcripts', array('room' => $roomId, 'date' => $this->date, 'deleted' => 0,
-                    'niceDate' => SystemTime::timestampToNiceDate($this->time)));
+            $this->db->insert('room_transcripts', array('room' => $roomId, 'date' => $this->date,
+                    'deleted' => 0, 'niceDate' => SystemTime::timestampToNiceDate($this->time)));
         }
+    }
 
-        // code in the message
-        if (strpos($text, '{') && strpos($text, '}')) $text = "<pre><code>$text</code></pre>";
+    private function newTranscriptUser($roomId, $userId, $date) {
+        $sql = array('room' => $roomId, 'user' => $userId, 'date' => $date);
+        $result = $this->db->selectRow('transcript_users', 'user', $sql);
+        if (empty($result)) {
+            $transcript = $this->db->selectRow('room_transcripts', 'key', array('date' => $date, 'room' => $roomId));
+            if (!empty($transcript)) { // ... in case the transcript is deleted or something
+                $sql['transcript'] = $transcript['key'];
+                $this->db->insert('transcript_users', $sql);
+            }
+        }
+    }
 
+    private function textCode($text) {
+        return (strpos($text, '{') && strpos($text, '}')) ? "<pre><code>$text</code></pre>" : $text;
+    }
+
+    private function textLinks($text) {
         // URL highlight
         $urls = explode(' ', $text); $containsLink = FALSE;
         foreach ($urls as &$link) {
@@ -134,21 +190,7 @@ class MessageSpeak extends Fari_ApplicationModel {
         }
         if ($containsLink) $text = implode(' ', $urls);
 
-        $date = SystemTime::timestampToDate($time);
-
-        $this->db->insert('messages', array('text' => $text, 'user' => $shortName, 'room' => $roomId, 'type' => 'text',
-            'userId' => $userId, 'date' => $date, 'locked' => $this->lockedRoom, 'highlight' => 0));
-
-        // is this the first time we are saying something today?
-        $sql = array('room' => $roomId, 'user' => $userId, 'date' => $date);
-        $result = $this->db->selectRow('transcript_users', 'user', $sql);
-        if (empty($result)) {
-            $transcript = $this->db->selectRow('room_transcripts', 'key', array('date' => $date, 'room' => $roomId));
-            if (!empty($transcript)) { // ... in case the transcript is deleted or something
-                $sql['transcript'] = $transcript['key'];
-                $this->db->insert('transcript_users', $sql);
-            }
-        }
+        return $text;
     }
 
 	/**
