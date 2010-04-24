@@ -92,8 +92,11 @@ class GuestPresenter extends Fari_ApplicationPresenter {
 
         $this->bag->room = $this->room->getDescription($roomId);
 
-        $this->bag->userId = $this->guestUser->getId();
-        $this->bag->shortName = $this->guestUser->getShortName();
+        // glitch fix I can haz?
+        if ($this->guestUser instanceof User) {
+            $this->bag->userId = $this->guestUser->getId();
+            $this->bag->shortName = $this->guestUser->getShortName();
+        }
     }
 
 

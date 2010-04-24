@@ -47,13 +47,13 @@ class MessageSpeak extends Fari_ApplicationModel {
             $this->db->update('rooms', array('timestamp' => $time), array('id' => $roomId));
 
             // do we have a message in the last 5 minutes?
-            $this->time = $this->roundTimestamp($time);
+            $this->time = SystemTime::roundTimestamp($time);
 
             $result = $this->db->selectRow('rooms', 'id, locked', "id=$roomId AND activity >= {$this->time}");
             $this->lockedRoom = ($result['locked'] == 1) ? '1' : '0';
 
-            $this->date = $this->timestampToDate($this->time);
-            $niceTime = $this->timestampToTime($this->time);
+            $this->date = SystemTime::timestampToDate($this->time);
+            $niceTime = SystemTime::timestampToTime($this->time);
 
             // hide this message?
             if ($hide > 0) {
@@ -84,15 +84,6 @@ class MessageSpeak extends Fari_ApplicationModel {
         }
 	}
 
-    /**
-     * Generate a nice time from a timestamp, eg: '11:05 AM'
-     * @param <type> $time
-     * @return <type>
-     */
-    private function timestampToTime($time) {
-        return date("g", $time) . ':' . date("i", $time) . ' ' . date("A", $time);
-    }
-
 	/**
 	 * Plain old boring text message
      *
@@ -111,7 +102,7 @@ class MessageSpeak extends Fari_ApplicationModel {
         if (empty($result)) {
             // new message of the day, insert transcript entry
             $this->db->insert('room_transcripts', array('room' => $roomId, 'date' => $this->date, 'deleted' => 0,
-                    'niceDate' => date("l, F j", $this->time)));
+                    'niceDate' => SystemTime::timestampToNiceDate($this->time)));
         }
 
         // code in the message
@@ -143,7 +134,7 @@ class MessageSpeak extends Fari_ApplicationModel {
         }
         if ($containsLink) $text = implode(' ', $urls);
 
-        $date = $this->timestampToDate($time);
+        $date = SystemTime::timestampToDate($time);
 
         $this->db->insert('messages', array('text' => $text, 'user' => $shortName, 'room' => $roomId, 'type' => 'text',
             'userId' => $userId, 'date' => $date, 'locked' => $this->lockedRoom, 'highlight' => 0));
@@ -170,7 +161,7 @@ class MessageSpeak extends Fari_ApplicationModel {
 	 */
     public function enter($roomId, $time, $shortName) {
         $this->db->insert('messages', array('room' => $roomId, 'user' => $shortName, 'type' => 'room',
-                'text' => 'has entered the room', 'date' => $this->timestampToDate($time),
+                'text' => 'has entered the room', 'date' => SystemTime::timestampToDate($time),
                 'locked' => $this->lockedRoom));
     }
 
@@ -184,7 +175,7 @@ class MessageSpeak extends Fari_ApplicationModel {
 	 */
     public function leave($roomId, $time, $shortName) {
         $this->db->insert('messages', array('room' => $roomId, 'user' => $shortName, 'type' => 'room',
-                'text' => 'has left the room', 'date' => $this->timestampToDate($time),
+                'text' => 'has left the room', 'date' => SystemTime::timestampToDate($time),
                 'locked' => $this->lockedRoom));
     }
 
@@ -199,7 +190,7 @@ class MessageSpeak extends Fari_ApplicationModel {
     public function lock($roomId, $shortName, $lock) {
         $lock = ($lock > 0) ? '' : 'un';
         $this->db->insert('messages', array('room' => $roomId, 'user' => $shortName, 'type' => 'lock',
-                'text' => "has ${lock}locked the room", 'date' => $this->timestampToDate(mktime()),
+                'text' => "has ${lock}locked the room", 'date' => SystemTime::timestampToDate(),
                 'locked' => $this->lockedRoom));
     }
 
@@ -215,7 +206,7 @@ class MessageSpeak extends Fari_ApplicationModel {
     public function guest($roomId, $shortName, $guest, $time) {
         $guest = ($guest != '0') ? 'on' : 'off';
         $this->db->insert('messages', array('room' => $roomId, 'user' => $shortName, 'type' => 'guest',
-                'text' => "turned ${guest} guest access", 'date' => $this->timestampToDate($time),
+                'text' => "turned ${guest} guest access", 'date' => SystemTime::timestampToDate($time),
                 'locked' => $this->lockedRoom));
     }
 
@@ -230,7 +221,7 @@ class MessageSpeak extends Fari_ApplicationModel {
     public function topic($roomId, $shortName, $topic) {
         $text = (empty($topic)) ? 'cleared the topic ' : "changed the room&#39;s topic to <em>$topic</em>";
         $this->db->insert('messages', array('room' => $roomId, 'user' => $shortName, 'type' => 'topic',
-                'text' => $text, 'date' => $this->timestampToDate(mktime()), 'locked' => $this->lockedRoom));
+                'text' => $text, 'date' => SystemTime::timestampToDate(), 'locked' => $this->lockedRoom));
     }
 
     /**
@@ -244,37 +235,6 @@ class MessageSpeak extends Fari_ApplicationModel {
     public function transcript($roomId, $shortName, $date) {
         $this->db->insert('messages', array('room' => $roomId, 'user' => $shortName, 'type' => 'transcript',
                 'text' => 'cleared the transcript', 'date' => $date, 'locked' => $this->lockedRoom));
-    }
-
-
-
-    /********************* helpers *********************/
-
-
-
-	/**
-	 * Round the time to the nearest lowest 12th of an hour
-     *
-     * @param integer $time UNIX timestamp
-     * @return integer Rounded timestamp
-	 */
-    private function roundTimestamp($time) {
-        $minutes = date("i", $time);
-        $minutes = (substr($minutes, -1) > 4) ? substr($minutes, 0, 1) . '5' : substr($minutes, 0, 1) . '0';
-        // strip the leading zero
-        $minutes = ($minutes < 10) ? substr($minutes, 1) : $minutes;
-
-        // hour minute second month day year
-        return mktime(date("G", $time), $minutes, 0, date("n", $time), date("j", $time), date("Y", $time));
-    }
-
-    /**
-     * Return a date formatted entry for a db from a timestamp
-     *
-     * @param string $time DB entry date
-     */
-    private function timestampToDate($time) {
-        return date("Y-m-d", $time);
     }
     
 }

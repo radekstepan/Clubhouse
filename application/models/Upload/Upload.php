@@ -37,7 +37,7 @@ class Upload extends Fari_Bag {
         $stream = fopen($file['tmp_name'], 'rb');
 
         $code = $this->randomCode($db);
-        $date = date("Y-m-d", mktime());
+        $date = SystemTime::timestampToDate();
 
         // let's associate the file with a transcript (there better be a transcript...)
         $transcript = $db->selectRow('room_transcripts', 'key', array('date' => $date, 'room' => $roomId));

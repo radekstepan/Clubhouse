@@ -65,8 +65,13 @@ class Transcript extends Fari_Bag {
             array('transcript' => $this->details['key']));
 
         $this->db->delete('files', array('transcript' => $this->details['key']));
-        // thumbnails
-        $this->db->delete('thumbs', "code IN ('{$files['codes']}')");
+
+        // thumbnails aka silly quoting
+        $codes = explode(',', $files['codes']);
+        foreach ($codes as &$code) $code = "'$code'";
+        $codes = implode(', ', $codes);
+
+        $this->db->delete('thumbs', "code IN ({$codes})");
 
         // finaly ourselves
         $this->db->delete('room_transcripts', array('key' => $this->details['key']));
@@ -78,7 +83,7 @@ class Transcript extends Fari_Bag {
         $this->db->delete('messages', array('room' => $this->details['room'], 'date' => $this->details['date']));
 
         // has this happened today?
-        if ($date == date("Y-m-d", mktime())) {
+        if ($date == SystemTime::timestampToDate()) {
             $message = new MessageSpeak($this->details['room'], mktime());
             $message->transcript($this->details['room'], $shortName, $date);
         }
