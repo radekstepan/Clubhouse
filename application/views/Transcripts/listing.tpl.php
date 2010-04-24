@@ -69,7 +69,7 @@
                                     <div class="files">
                                         <h3>Files</h3>
                                         <?php foreach ($t['files'] as $f): ?>
-                                            <img src="<?php url('public/images/files/' . $f['type'] . '.gif'); ?>" alt ="filetype"/>
+                                            <img src="<?php url('public/images/files/icon_' . $f['type'] . '.gif'); ?>" alt ="filetype"/>
                                             <a class="blue" href="<?php url('file/get/' . $f['code'] . '/'); ?>">
                                                 <?php echo $f['filename']; ?>
                                             </a><br />

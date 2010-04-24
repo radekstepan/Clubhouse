@@ -99,21 +99,21 @@ div.button span { background:url('../images/button_right.gif') no-repeat 100% 0p
                 #left table#result td div.star a { background:url('../images/star.png') no-repeat;
                          background-position:left -36px; display:block; height:17px; }
 
-            #left table#result a.file { width:24px; display:block; float:left; padding:2px; height:14px; }
+            #left table#result a.file { width:16px; display:block; float:left; padding:2px; height:14px; }
             #left table#result a.blue:hover { background-color:#303030; }
-            #left table#result a.doc { background:url('../images/files/doc.gif') no-repeat left; }
-            #left table#result a.gif { background:url('../images/files/gif.gif') no-repeat left; }
-            #left table#result a.htm { background:url('../images/files/htm.gif') no-repeat left; }
-            #left table#result a.html { background:url('../images/files/html.gif') no-repeat left; }
-            #left table#result a.jpeg { background:url('../images/files/jpeg.gif') no-repeat left; }
-            #left table#result a.jpg { background:url('../images/files/jpg.gif') no-repeat left; }
-            #left table#result a.pdf { background:url('../images/files/pdf.gif') no-repeat left; }
-            #left table#result a.png { background:url('../images/files/png.gif') no-repeat left; }
-            #left table#result a.psd { background:url('../images/files/psd.gif') no-repeat left; }
-            #left table#result a.txt { background:url('../images/files/txt.gif') no-repeat left; }
-            #left table#result a.xls { background:url('../images/files/xls.gif') no-repeat left; }
-            #left table#result a.zip { background:url('../images/files/zip.gif') no-repeat left; }
-            #left table#result a.generic { background:url('../images/files/generic.gif') no-repeat left; }
+            #left table#result a.doc { background:url('../images/files/icon_doc.gif') no-repeat left; }
+            #left table#result a.gif { background:url('../images/files/icon_gif.gif') no-repeat left; }
+            #left table#result a.htm { background:url('../images/files/icon_htm.gif') no-repeat left; }
+            #left table#result a.html { background:url('../images/files/icon_html.gif') no-repeat left; }
+            #left table#result a.jpeg { background:url('../images/files/icon_jpeg.gif') no-repeat left; }
+            #left table#result a.jpg { background:url('../images/files/icon_jpg.gif') no-repeat left; }
+            #left table#result a.pdf { background:url('../images/files/icon_pdf.gif') no-repeat left; }
+            #left table#result a.png { background:url('../images/files/icon_png.gif') no-repeat left; }
+            #left table#result a.psd { background:url('../images/files/icon_psd.gif') no-repeat left; }
+            #left table#result a.txt { background:url('../images/files/icon_txt.gif') no-repeat left; }
+            #left table#result a.xls { background:url('../images/files/icon_xls.gif') no-repeat left; }
+            #left table#result a.zip { background:url('../images/files/icon_zip.gif') no-repeat left; }
+            #left table#result a.generic { background:url('../images/files/icon_generic.gif') no-repeat left; }
 
             #left table#result a.youtube { background:url('../images/youtube_video.gif') no-repeat left; display:block;
                 height:263px; }
@@ -283,21 +283,21 @@ div.button span { background:url('../images/button_right.gif') no-repeat 100% 0p
     #right #fileUpload iframe { width:0; height:0; border:0px solid #fff; }
 
     #right ul#fileListing { list-style-type:none; padding-left:5px; }
-    #right #fileListing li { padding-left:28px; line-height:20px; }
+    #right #fileListing li { padding-left:22px; line-height:20px; }
         #right #fileListing li a { font-size:13px; }
-        #right #fileListing li.doc { background:url('../images/files/doc.gif') no-repeat left; }
-        #right #fileListing li.gif { background:url('../images/files/gif.gif') no-repeat left; }
-        #right #fileListing li.htm { background:url('../images/files/htm.gif') no-repeat left; }
-        #right #fileListing li.html { background:url('../images/files/html.gif') no-repeat left; }
-        #right #fileListing li.jpeg { background:url('../images/files/jpeg.gif') no-repeat left; }
-        #right #fileListing li.jpg { background:url('../images/files/jpg.gif') no-repeat left; }
-        #right #fileListing li.pdf { background:url('../images/files/pdf.gif') no-repeat left; }
-        #right #fileListing li.png { background:url('../images/files/png.gif') no-repeat left; }
-        #right #fileListing li.psd { background:url('../images/files/psd.gif') no-repeat left; }
-        #right #fileListing li.txt { background:url('../images/files/txt.gif') no-repeat left; }
-        #right #fileListing li.xls { background:url('../images/files/xls.gif') no-repeat left; }
-        #right #fileListing li.zip { background:url('../images/files/zip.gif') no-repeat left; }
-        #right #fileListing li.generic { background:url('../images/files/generic.gif') no-repeat left; }
+        #right #fileListing li.doc { background:url('../images/files/icon_doc.gif') no-repeat left; }
+        #right #fileListing li.gif { background:url('../images/files/icon_gif.gif') no-repeat left; }
+        #right #fileListing li.htm { background:url('../images/files/icon_htm.gif') no-repeat left; }
+        #right #fileListing li.html { background:url('../images/files/icon_html.gif') no-repeat left; }
+        #right #fileListing li.jpeg { background:url('../images/files/icon_jpeg.gif') no-repeat left; }
+        #right #fileListing li.jpg { background:url('../images/files/icon_jpg.gif') no-repeat left; }
+        #right #fileListing li.pdf { background:url('../images/files/icon_pdf.gif') no-repeat left; }
+        #right #fileListing li.png { background:url('../images/files/icon_png.gif') no-repeat left; }
+        #right #fileListing li.psd { background:url('../images/files/icon_psd.gif') no-repeat left; }
+        #right #fileListing li.txt { background:url('../images/files/icon_txt.gif') no-repeat left; }
+        #right #fileListing li.xls { background:url('../images/files/icon_xls.gif') no-repeat left; }
+        #right #fileListing li.zip { background:url('../images/files/icon_zip.gif') no-repeat left; }
+        #right #fileListing li.generic { background:url('../images/files/icon_generic.gif') no-repeat left; }
 
     #right #searchForm { margin-top:20px; }
         #right #searchForm input#q { width:263px; }
