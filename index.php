@@ -18,7 +18,7 @@ if (!isset($_SESSION)) session_start();
 
 // Step 1a: Define absolute environment values
 // set so that we can check if PHP pages have been accessed directly
-if (!defined('FARI')) define('FARI', 'Fari Framework 2.2.0.0 (Apr 20, 2010)');
+if (!defined('FARI')) define('FARI', 'Fari Framework 2.2.1.0 (May 8, 2010)');
 
 // get absolute pathname and define it as a constant (server install path)
 if (!defined('BASEPATH')) define('BASEPATH', dirname(__FILE__));
@@ -38,7 +38,7 @@ require BASEPATH . '/config/config' . EXT;
 
 
 
-// Step 2: Initialize Error & Exceptions handling and check environment
+// Step 2a: Initialize Error & Exceptions handling and check environment
 require BASEPATH . '/fari/Application/ApplicationDiagnostics' . EXT;
 
 // check that we have a high enough version of PHP (5.2.0)
@@ -51,6 +51,8 @@ try { if (substr_count(WWW_DIR, '~') > 0) {
 	throw new Fari_Exception('Apache user-directory ' . WWW_DIR . ' not supported by Fari Framework.'); }
 } catch (Fari_Exception $exception) { $exception->fire(); }
 
+// Step 2b: Setup contracts handling
+require BASEPATH . '/fari/Application/ApplicationContracts' . EXT;
 
 
 // Step 3: Define global functions and those required for framework start

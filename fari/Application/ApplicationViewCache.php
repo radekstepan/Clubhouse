@@ -39,6 +39,8 @@ class Fari_ApplicationViewCache {
      * @param mixed $parameters Parameters to pass to the function that identify the view
      */
     public function renderCache($viewName, $parameters=NULL) {
+        assert('strlen($viewName) > 0; // view name cannot be empty');
+
         $this->viewName = $viewName;
         // build file id from (folder(s) and) file name
         $this->fileId = $this->getFileId($viewName, $parameters);

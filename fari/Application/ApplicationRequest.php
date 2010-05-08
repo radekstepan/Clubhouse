@@ -221,6 +221,9 @@ class Fari_ApplicationRequest {
         if (substr($host, -1) == '/') {
             $host = substr($host, 0, strlen($host)-1);
         }
+
+        assert('strlen($host) > 0; // expected to resolve HTTP_HOST');
+
         return $host;
     }
 

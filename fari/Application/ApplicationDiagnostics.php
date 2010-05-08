@@ -140,13 +140,6 @@ class Fari_ApplicationDiagnostics {
             && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
             die("Fari Exception on line $line in \"$file\": $message");
         }
-
-		// set color of the highlighting
-		ini_set('highlight.string',	'#080');
-		ini_set('highlight.comment',	'#999; font-style: italic');
-		ini_set('highlight.default',	'#33393c');
-		ini_set('highlight.html',	'#06b');
-		ini_set('highlight.keyword',	'#d24; font-weight: bold');
 		
 		// 'build' the header
 		self::showHeader();
@@ -203,8 +196,15 @@ class Fari_ApplicationDiagnostics {
 	 * @param string $displayRange How many source code lines before and after error line to show
 	 * @param string $divId So that we can show/hide some source and then call it via js
 	 */
-	private static function showErrorSource($errorFile, $errorLine, $displayRange=6, $divId=0) {
-		// get the source code into a string
+	static function showErrorSource($errorFile, $errorLine, $displayRange=6, $divId=0) {
+        // set color of the highlighting
+		ini_set('highlight.string',	'#080');
+		ini_set('highlight.comment',	'#999; font-style: italic');
+		ini_set('highlight.default',	'#33393c');
+		ini_set('highlight.html',	'#06b');
+		ini_set('highlight.keyword',	'#d24; font-weight: bold');
+
+        // get the source code into a string
 		$sourceCode = highlight_file($errorFile, TRUE);
 		// split into an array so that we can extract lines
 		$sourceCode = explode('<br />', $sourceCode);

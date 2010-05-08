@@ -36,7 +36,9 @@ class Fari_ApplicationView {
 	 * @param string $contentType Specifies optional content type for the view
 	 * @param string $extraParam Extra parameter to find the view by
  	 */
- 	public function render($viewName) {		
+ 	public function render($viewName) {
+        assert('strlen($viewName) > 0; // view name cannot be empty');
+
         // import key:value array into symbol table
         extract($this->values, EXTR_SKIP);
         

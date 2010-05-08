@@ -1,11 +1,12 @@
 var newMessages;
+
 function displayMessages(json) {
     var soundPlay = false;
 
     // remove any ad-hoc messages
     if ($('remove')) $('remove').remove();
 
-    json.each(function(message) {
+    json.each(function (message) {
         // don't repeat the same name of the user
         if (message.user == lastUserName && message.type == lastMessageType) lastUserName = '';
         else lastUserName = message.user;
@@ -14,25 +15,23 @@ function displayMessages(json) {
         // highlight our messages
         var ourMessage = '';
         if (message.type == 'text' && message.userId == userId) ourMessage = ' our';
-        
+
         // play audio and increase new message counter
         if (message.type == 'text' && message.userId != userId) {
-            soundPlay = true; newMessages++;
+            soundPlay = true;
+            newMessages++;
         }
 
         // highlight
         var highlight = '';
         if (message.type == 'text' && typeof(lockedRoom) != 'undefined' && !lockedRoom) {
-            highlight = '<div id="highlight_'
-                + message.id + '" onclick="highlightMessage(\''
-                + message.id + '\');return false;" class="highlight"><a href=""></a></div>';
+            highlight = '<div id="highlight_' + message.id + '" onclick="highlightMessage(\'' + message.id + '\');return false;" class="highlight"><a href=""></a></div>';
         }
-        
+
         $('result').innerHTML += '\
             <tr>\
                 <td class="user ' + message.type + ourMessage + '">' + lastUserName + '</td>\
-                <td class="body ' + message.type + ourMessage + '">'
-                + html_entity_decode(message.text) + highlight + '</td>\
+                <td class="body ' + message.type + ourMessage + '">' + html_entity_decode(message.text) + highlight + '</td>\
             </tr>';
         lastMessage = message.id;
         lastUserName = message.user;
@@ -45,6 +44,7 @@ function displayMessages(json) {
 }
 
 var roomName;
+
 function setTitle() {
     var focus = document.hasFocus();
     if (focus || parseInt(newMessages) == 0) {
@@ -57,20 +57,19 @@ function setTitle() {
 
 var scroll = false;
 var messageTimeout;
+
 function getMessages(url, roomId, param) {
     setTitle();
 
     //spinner(true);
-    new Ajax.Request(url + roomId + '/' + param,
-    {
+    new Ajax.Request(url + roomId + '/' + param, {
         method: 'get',
-        onSuccess: function(transport) {
+        onSuccess: function (transport) {
             var result = transport.responseText.evalJSON();
             if (result == 'bye') kickUser();
-            
+
             displayMessages(result);
             //spinner(false);
-
             if (scroll) scrollToBottom();
 
             // call again in 3 seconds
@@ -81,17 +80,16 @@ function getMessages(url, roomId, param) {
 
 function displayParticipants(json) {
     $('participants').innerHTML = ''; // wipe
-    json.each(function(participant) {
+    json.each(function (participant) {
         $('participants').innerHTML += '\
             <li>' + participant.long + '</li>'; // uh oh, naming...
     });
 }
 
 function highlightMessage(messageId) {
-    new Ajax.Request(domainAddress + 'message/highlight/' + messageId,
-    {
+    new Ajax.Request(domainAddress + 'message/highlight/' + messageId, {
         method: 'get',
-        onSuccess: function(transport) {
+        onSuccess: function (transport) {
             var result = transport.responseText.evalJSON();
             if (result != null) {
                 if (result == 1) {
@@ -111,10 +109,9 @@ function kickUser() {
 }
 
 function pollRoom(url, roomId) {
-    new Ajax.Request(url + roomId,
-    {
+    new Ajax.Request(url + roomId, {
         method: 'get',
-        onSuccess: function(transport) {
+        onSuccess: function (transport) {
             var result = transport.responseText.evalJSON();
             if (result == 'bye') {
                 kickUser();
@@ -139,13 +136,12 @@ function displayUsersChatting(json) {
 }
 
 function getUsersChatting(url) {
-    new Ajax.Request(url,
-    {
+    new Ajax.Request(url, {
         method: 'get',
-        onSuccess: function(transport) {
+        onSuccess: function (transport) {
             var result = transport.responseText.evalJSON();
             if (result == 'bye') kickUser();
-            
+
             displayUsersChatting(result);
             // call again in 30 seconds
             var t = setTimeout("getUsersChatting('" + url + "')", 5000);
@@ -172,15 +168,16 @@ function showMessage() {
 
 function sendMessage() {
     showMessage();
-    $('sendMessageForm').request(
-    {
+    $('sendMessageForm').request({
         method: 'post',
-        onSuccess: function(transport) {
+        onSuccess: function (transport) {
             $('text').value = '';
             $('text').focus();
             scroll = true;
         },
-        onFailure: function() { alert('Something went wrong...'); }
+        onFailure: function () {
+            alert('Something went wrong...');
+        }
     });
 }
 
@@ -195,11 +192,14 @@ function timeDifference(past) {
 }
 
 var lobbyRooms = new Array();
+
 function displayRooms(json, highlight) {
     // clear first
     $('lobby').innerHTML = '<tr><td></td><td></td><td></td></tr>';
-    var roomCount = 0; var rowNumber = 0; var newRooms = new Array();
-    json.each(function(room) {
+    var roomCount = 0;
+    var rowNumber = 0;
+    var newRooms = new Array();
+    json.each(function (room) {
         newRooms[room.id] = true;
         // create a new room for a triplet of rooms
         if (roomCount % 3 == 0) {
@@ -215,11 +215,9 @@ function displayRooms(json, highlight) {
         // locked room?
         if (room.locked == 0) {
             element.innerHTML = '<div id="room_' + room.id + '" class="room"><h2>\
-                <a class="blue" href="room/' + room.id + '/">' + room.name + '</a></h2>'
-            + timeDifference(room.timestamp) + '<p>' + room.description + '</p></div>';
+                <a class="blue" href="room/' + room.id + '/">' + room.name + '</a></h2>' + timeDifference(room.timestamp) + '<p>' + room.description + '</p></div>';
         } else {
-            element.innerHTML = '<div id="room_' + room.id + '" class="room locked"><h2 class="locked">'
-                + room.name + '</a></h2><span>Locked</span><p>' + room.description + '</p>\
+            element.innerHTML = '<div id="room_' + room.id + '" class="room locked"><h2 class="locked">' + room.name + '</a></h2><span>Locked</span><p>' + room.description + '</p>\
                 <p class="tiny">You can <a class="blue" href="room/' + room.id + '/">enter the locked room</a> because\
                 you\'re an admin.</p></div>';
         }
@@ -227,7 +225,7 @@ function displayRooms(json, highlight) {
         // do we have users in the room?
         if (room.users && room.locked == 0) {
             var roomUsers = '';
-            room.users.each(function(name) {
+            room.users.each(function (name) {
                 roomUsers += '<li>' + name + '</li>';
             });
             element.innerHTML += '<ul class="participants">' + roomUsers + '</ul>';
@@ -235,7 +233,9 @@ function displayRooms(json, highlight) {
 
         $('row_' + rowNumber).appendChild(element);
 
-        if (highlight && (lobbyRooms[room.id] == undefined)) new Effect.Highlight('room_' + room.id, {duration:3});
+        if (highlight && (lobbyRooms[room.id] == undefined)) new Effect.Highlight('room_' + room.id, {
+            duration: 3
+        });
         roomCount++;
     });
     lobbyRooms = newRooms;
@@ -250,25 +250,25 @@ function displayRooms(json, highlight) {
 
 function createRoom() {
     $('dots').toggle();
-    $('createRoomForm').request(
-    {
+    $('createRoomForm').request({
         method: 'post',
-        onSuccess: function(transport) {
+        onSuccess: function (transport) {
             $('dots').toggle();
             $('createRoomForm-name').value = '';
             $('createRoomForm-description').value = '';
             slideInOut('createRoom');
             displayRooms(transport.responseText.evalJSON(), true);
         },
-        onFailure: function() { alert('Something went wrong...'); }
+        onFailure: function () {
+            alert('Something went wrong...');
+        }
     });
 }
 
 function getRooms(url, highlight) {
-    new Ajax.Request(url,
-    {
+    new Ajax.Request(url, {
         method: 'get',
-        onSuccess: function(transport) {
+        onSuccess: function (transport) {
             var result = transport.responseText.evalJSON();
             if (result == 'bye') kickUser();
             displayRooms(result, highlight);
@@ -280,7 +280,7 @@ function getRooms(url, highlight) {
 
 function alternateTableColor() {
     var i = 0;
-    $$('.alternate tr').each(function(element) {
+    $$('.alternate tr').each(function (element) {
         if (i % 2 == 0) {
             element.className = "even";
         } else {
@@ -303,18 +303,21 @@ function spinner(show) {
 
 function slideInOut(id) {
     if ($(id).style.display != 'none') {
-        Effect.BlindUp(id, { duration:0.2 });
+        Effect.BlindUp(id, {
+            duration: 0.2
+        });
     } else {
-        Effect.BlindDown(id, { duration:0.3 });
+        Effect.BlindDown(id, {
+            duration: 0.3
+        });
     }
 }
 
 function deleteUser(url, param) {
     $('trash_' + param).innerHTML = "<div class='dots'>&nbsp;</div>";
-    new Ajax.Request(url + param,
-    {
+    new Ajax.Request(url + param, {
         method: 'get',
-        onSuccess: function(transport) {
+        onSuccess: function (transport) {
             $('user_' + param).remove();
             alternateTableColor();
         }
@@ -322,13 +325,13 @@ function deleteUser(url, param) {
 }
 
 var deleteRoomText = 'Are you sure you want to delete the room?';
+
 function deleteRoom(url, param) {
     if (confirm(deleteRoomText)) {
         $('room_' + param).innerHTML = "<div class='dots'>&nbsp;</div>";
-        new Ajax.Request(url + param,
-        {
+        new Ajax.Request(url + param, {
             method: 'get',
-            onSuccess: function(transport) {
+            onSuccess: function (transport) {
                 $('room_' + param).remove();
                 alternateTableColor();
             }
@@ -337,16 +340,17 @@ function deleteRoom(url, param) {
 }
 
 var lockRoomText = 'Are you sure you want to lock this room?';
+
 function lockRoom(url) {
     // are you sure?
     if (confirm(lockRoomText)) {
         // spinner on, link off
-        $('lockSpinner').toggle(); $('lockLink').toggle();
+        $('lockSpinner').toggle();
+        $('lockLink').toggle();
 
-        new Ajax.Request(url,
-        {
+        new Ajax.Request(url, {
             method: 'get',
-            onSuccess: function(transport) {
+            onSuccess: function (transport) {
                 // link text & spinner
                 if (!lockedRoom) {
                     $('lockLink').innerHTML = "Unlock room";
@@ -362,7 +366,8 @@ function lockRoom(url) {
                 $('lockMessage').toggle();
 
                 // spinner off, link on
-                $('lockSpinner').toggle(); $('lockLink').toggle();
+                $('lockSpinner').toggle();
+                $('lockLink').toggle();
             }
         });
     }
@@ -379,7 +384,7 @@ function displayRoomSettings(json) {
         $('addTopic').innerHTML = 'Add a topic';
         $('topicEdit').innerHTML = '';
     }
-    
+
     // room lock
     if ($('lockLink')) { // guest room...
         if (json.locked > 0) {
@@ -429,10 +434,9 @@ function editTopicToggle() {
 
 function editTopic() {
     $('dots').toggle();
-    $('editTopicForm').request(
-    {
+    $('editTopicForm').request({
         method: 'post',
-        onSuccess: function(transport) {
+        onSuccess: function (transport) {
             var newTopic = transport.responseText.evalJSON()
             $('roomDescription').innerHTML = newTopic;
             // clear input form
@@ -443,18 +447,23 @@ function editTopic() {
             editTopicToggle();
             // are we showing 'Edit' or 'Add'?
             if (newTopic.length > 0) {
-                $('topicEdit').style.display = 'inline'; $('topicEdit').innerHTML = 'Edit';
+                $('topicEdit').style.display = 'inline';
+                $('topicEdit').innerHTML = 'Edit';
                 $('addTopic').style.display = 'none';
             } else {
                 $('topicEdit').style.display = 'none';
-                $('addTopic').style.display = 'inline'; $('addTopic').innerHTML = 'Add a topic';
+                $('addTopic').style.display = 'inline';
+                $('addTopic').innerHTML = 'Add a topic';
             }
         },
-        onFailure: function() { alert('Something went wrong...'); }
+        onFailure: function () {
+            alert('Something went wrong...');
+        }
     });
 }
 
 var guestRoomText = 'Are you sure you want to turn guest access ';
+
 function guestRoom(url) {
     // this is the new status we are trying to achieve
     if (guestStatus == 'on') {
@@ -466,12 +475,12 @@ function guestRoom(url) {
     // are you sure?
     if (confirm(guestRoomText + guestStatus + '?')) {
         // spinner on, link off
-        $('guestSpinner').toggle(); $('guestLink').toggle();
+        $('guestSpinner').toggle();
+        $('guestLink').toggle();
 
-        new Ajax.Request(url,
-        {
+        new Ajax.Request(url, {
             method: 'get',
-            onSuccess: function(transport) {
+            onSuccess: function (transport) {
                 var response = transport.responseText.evalJSON();
                 // link text & spinner
                 if (response != '0') {
@@ -491,20 +500,22 @@ function guestRoom(url) {
                     $('guestNote').style.display = 'none'; // guest mode note
                     $('guestAddress').innerHTML = ''; // guest address
                 }
-                
+
                 // spinner off, link on
-                $('guestSpinner').toggle(); $('guestLink').toggle();
+                $('guestSpinner').toggle();
+                $('guestLink').toggle();
             }
         });
     }
 }
 
 function scrollToBottom() {
-    scrollTo(0,999999);
+    scrollTo(0, 999999);
     scroll = false;
 }
 
 var fileUploadStatus;
+
 function fileUpload() {
     // hide form
     $('fileUpload').toggle();
@@ -519,6 +530,8 @@ function fileUpload() {
 }
 
 // file upload poller
+
+
 function fileUploadPoll() {
     // check file upload success
     if ($('target').contentWindow.document.body.innerHTML != fileUploadStatus) {
@@ -534,13 +547,14 @@ function fileUploadPoll() {
 
 function displayFiles(result) {
     $('fileListing').innerHTML = '';
-    result.each(function(file) {
+    result.each(function (file) {
         $('fileListing').innerHTML += '<li class="' + file.type + '">\
-            <a class="blue" href="' + domainAddress + 'file/get/' +  file.code + '/">' + file.filename + '</a></li>';
+            <a class="blue" href="' + domainAddress + 'file/get/' + file.code + '/">' + file.filename + '</a></li>';
     });
 }
 
 var sound = true;
+
 function soundSwitch(url) {
     if (sound) {
         sound = false;
@@ -556,10 +570,9 @@ function playSound() {
 }
 
 function checkUsername(url) {
-    new Ajax.Request(url + encodeURI($('usernameField').value),
-    {
+    new Ajax.Request(url + encodeURI($('usernameField').value), {
         method: 'get',
-        onSuccess: function(transport) {
+        onSuccess: function (transport) {
             var result = transport.responseText.evalJSON();
             if (result.empty()) {
                 $('username').className = 'field green';
@@ -591,9 +604,11 @@ function checkPasswords() {
 }
 
 // Bram.us
+
+
 function html_entity_decode(string) {
     var ta = document.createElement("textarea");
-    ta.innerHTML = string.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    ta.innerHTML = string.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     toReturn = ta.value;
     ta = null;
     return toReturn;
