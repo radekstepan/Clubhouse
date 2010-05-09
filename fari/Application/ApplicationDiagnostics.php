@@ -28,7 +28,7 @@ ini_set('display_errors', 0);
  * @return void
  */
 function shutdown() {
-    if ($error = error_get_last()) {
+    if (($error = error_get_last())) {
         extract($error);
         switch($type) {
             case E_ERROR:
