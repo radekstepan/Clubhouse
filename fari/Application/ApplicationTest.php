@@ -19,11 +19,22 @@
  */
 class Fari_ApplicationTest {
 
+    /** @var have we failed at least one of the tests? */
     private $failed = FALSE;
+
+    /** @var results array of all tests */
     private $results = array();
+
+    /** @var PHP functions we can check for */
     private $functions = array('is_string', 'is_bool', 'is_true', 'is_false', 'is_int', 'is_numeric', 'is_float',
         'is_double', 'is_array', 'is_null');
 
+    /**
+     * Run a single unit test.
+     * @param mixed what to test for
+     * @param mixed what do we expect OR is_* PHP function
+     * @param string name for the test we run
+     */
     public function run($test, $expected=TRUE, $testName='undefined') {
         if (in_array($expected, $this->functions, TRUE)) {
             // test the equality with a function
@@ -35,8 +46,6 @@ class Fari_ApplicationTest {
 
         // backtrace and get the tested class
         $trace = debug_backtrace();
-        extract($trace[1]);
-
         
         // switch failed status?
         if ($result === TRUE) {
@@ -49,15 +58,23 @@ class Fari_ApplicationTest {
         // form report
         $this->results[] = array (
             'name' => $testName,
+            'file' => $trace[0]['file'],
+            'line' => $trace[0]['line'],
             'result' => $result,
-            'class' => $class,
-            'function' => $function,
-            'expected' => substr($expected, 3),
-            'test' => gettype($test),
+            'class' => $trace[1]['class'],
+            'function' => $trace[1]['function'],
+            'expected' => (substr($expected, 0, 3) == 'is_') ?
+                substr($expected, 3) : Fari_ApplicationDiagnostics::formatVars($expected),
+            'test' => Fari_ApplicationDiagnostics::formatVars($test)
         );
     }
 
+
+    /**
+     * Show a resulting test report.
+     */
     public function report() {
+        // header formatting
         if ($this->failed === TRUE) {
             $title = 'Test(s) failed';
             $color = '#C52F24';
@@ -67,6 +84,8 @@ class Fari_ApplicationTest {
             $color = '#26BF26';
             $line = '#059824';
         }
+
+        // HTML output
         ?>
             <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
             <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -91,20 +110,26 @@ class Fari_ApplicationTest {
                 <?php foreach ($this->results as $result): ?>
                     <div id="test">
                         <div class="<?php echo $result['result']; ?>" style="float:right;">
-                            <?php
-                            echo $result['name'];
-                            if ($result['result'] == 'failed')
-                                echo ' (expected <em>' . $result['expected'] . '</em> got <em>' .
-                                    $result['test'] . '</em>) ';
-                            echo ' <b>' . $result['result'] . '</b>';
-                         ?>
+                            <?php echo $result['name'] . ' <b>' . $result['result'] . '</b>'; ?>
                         </div>
-                        <?php echo $result['class']; ?> / <?php echo $result['function']; ?>()
+
+                        File: <b><?php echo $result['file']; ?></b>
+                        Line: <b><?php echo $result['line']; ?></b>
+                        Class: <b><?php echo $result['class']; ?></b>
+                        Function: <b><?php echo $result['function']; ?>()</b>
+
+                        <?php if ($result['result'] == 'failed'): ?>
+                            <br /><div class="failed" style="text-align:right;">
+                                <b>Expected:</b> <?php echo $result['expected']; ?>
+                                <b>Got:</b> <?php echo $result['test']; ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
             </body>
         </html>
         <?php
+        die();
     }
 
 }

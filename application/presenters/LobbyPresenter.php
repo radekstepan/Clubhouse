@@ -53,7 +53,7 @@ class LobbyPresenter extends Fari_ApplicationPresenter {
 	public function actionIndex($p) {
         $this->bag->isAdmin = $this->user->isAdmin();
         $this->bag->tabs = $this->user->inRooms();
-        
+
         $this->render('lobby');
 	}
 

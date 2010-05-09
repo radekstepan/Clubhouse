@@ -98,11 +98,6 @@ class Fari_ApplicationDiagnostics {
 	 * Dumps variables into the view.
 	 */
     public static function dump($mixed, $title='Variable Dump') {
-        // we are working in HTML context
-        $mixed = Fari_Escape::html($mixed);
-        if ($mixed == NULL) $mixed = '<em>NULL</em>';
-        else if (empty($mixed)) $mixed = '<em>empty</em>';
-        else $mixed = print_r($mixed, TRUE);
         ?>
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -114,11 +109,26 @@ class Fari_ApplicationDiagnostics {
         <body>
             <div id="title"><b><?php echo FARI; ?></b> running <b><?php echo APP_VERSION; ?></b></div>
             <div id="message"><h1><?php echo $title; ?></h1></div>
-            <div id="box"><pre><?php echo $mixed; ?></pre></div>
+            <div id="box"><pre><?php echo self::formatVars($mixed); ?></pre></div>
             </body>
             </html>
         <?php
         die();
+    }
+
+    /**
+     * Format mixed variables for output
+     * @param <type> $mixed
+     * @return <type>
+     */
+    public static function formatVars($mixed) {
+        // we are working in HTML context
+        $mixed = Fari_Escape::html($mixed);
+        if ($mixed == NULL) $mixed = '<em>NULL</em>';
+        else if (empty($mixed)) $mixed = '<em>empty</em>';
+        else $mixed = print_r($mixed, TRUE);
+
+        return $mixed;
     }
 
 	/**

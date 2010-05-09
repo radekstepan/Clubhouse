@@ -73,9 +73,7 @@ function contractsCallback($file, $line, $message) {
 
                 <div id="file">File: <b><?php echo $file; ?></b> Line: <b><?php echo $line; ?></b></div>
 
-                <?php
-                    Fari_ApplicationDiagnostics::showErrorSource($file, $line);
-               ?>
+                <?php Fari_ApplicationDiagnostics::showErrorSource($file, $line); ?>
 
             </body>
         </html>
