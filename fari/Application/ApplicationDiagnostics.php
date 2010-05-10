@@ -382,7 +382,7 @@ class Fari_ApplicationDiagnostics {
         </style>
      <?php }
 
-    private static function jsToggle() {
+    public static function jsToggle() {
     ?>
         <script type="text/javascript">
         function toggle(id){var e=document.getElementById(id);

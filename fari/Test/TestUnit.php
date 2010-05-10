@@ -25,10 +25,6 @@ class Fari_TestUnit {
     /** @var results array of all tests */
     private $results = array();
 
-    /** @var PHP type functions */
-    private $typeFunctions = array('is_string', 'is_bool', 'is_true', 'is_false', 'is_int', 'is_numeric', 'is_float',
-        'is_double', 'is_array', 'is_null');
-
     /**
      * Compares two values and passes if they are equal (==)
      * @param mixed $test what to test for
@@ -40,6 +36,16 @@ class Fari_TestUnit {
     }
 
     /**
+     * Compares two values and passes if they are not equal (!=)
+     * @param mixed $test what to test for
+     * @param mixed $expected what do we expect
+     * @param string $testName for the test we run
+     */
+    public function isNot($test, $expected, $testName='undefined') {
+        $this->saveTest($test, $expected, ($test != $expected), $testName);
+    }
+
+    /**
      * Compares two values and passes if they are strictly equal (===)
      * @param mixed $test what to test for
      * @param mixed $expected what do we expect
@@ -47,6 +53,16 @@ class Fari_TestUnit {
      */
     public function isStrict($test, $expected, $testName='undefined') {
         $this->saveTest($test, $expected, ($test === $expected), $testName);
+    }
+
+    /**
+     * Compares two values and passes if they are not strictly equal (!==)
+     * @param mixed $test what to test for
+     * @param mixed $expected what do we expect
+     * @param string $testName for the test we run
+     */
+    public function isNotStrict($test, $expected, $testName='undefined') {
+        $this->saveTest($test, $expected, ($test !== $expected), $testName);
     }
 
     /**
@@ -104,6 +120,7 @@ class Fari_TestUnit {
             <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
             <head>
                 <title>Unit Testing</title>
+                 <?php Fari_ApplicationDiagnostics::jsToggle();  ?>
                  <style type="text/css">
                 body{background:#fff;color:#33393c;font:12px/1.5 "Trebuchet MS", "Geneva CE", lucida,sans-serif;
                 margin:0;}#title{background:#222;color:#565656;border-bottom:1px solid <?php echo $color; ?>;
@@ -114,19 +131,33 @@ class Fari_TestUnit {
                 color:#33393C;border:1px solid #CCCDCF;}#test .failed{color:#C52F24;}#test .passed{color:#26BF26;}
                 i{color:#999;}.num{color:#9E9E7E;font-style:normal;font-weight:400;}a{color:#980905;}td{padding-right:20px;}
                 table{font:16px/1.5 "Trebuchet MS", "Geneva CE", lucida, sans-serif;font-size:100%;}#title b,span.err{color:#FFF;}
+                .code{background-color:#FFF9D8;border:1px solid #FECA51;margin:10px 30px;padding:5px;}.error{background-color:#C52F24;
+                color:#fff;font-weight:700;background-color:#C52F24;font-size:100%;margin:0;padding:1px 0;}
                 </style>
             </head>
 
             <body>
                 <div id="title"><b><?php echo FARI; ?></b> running <b><?php echo APP_VERSION; ?></b></div>
                 <div id="message"><h1><?php echo $title; ?></h1></div>
-                <?php foreach ($this->results as $result): ?>
+                <?php $i=1; foreach ($this->results as $result): ?>
                     <div id="test">
-                        <div class="<?php echo $result['result']; ?>" style="float:right;">
-                            <?php echo $result['name'] . ' <b>' . $result['result'] . '</b>'; ?>
+                        <div style="float:right;">
+                            <?php
+                            echo '<b>File:</b> ' . $result['trace'][0] . ' <b>Line:</b> ' . $result['trace'][1];
+                                echo '&nbsp;&nbsp;<a href="" onclick="toggle(\'' . $i . '\');return false;" >source</a>';
+                         ?>
                         </div>
 
-                        <?php echo $result['trace']; ?>
+                        <div class="<?php echo $result['result']; ?>">
+                            <?php echo '<b>' . ucfirst($result['result']) . '</b> ' . $result['name']; ?>
+                        </div>
+
+                        <?php
+                        Fari_ApplicationDiagnostics::showErrorSource(
+                            $result['trace'][0], $result['trace'][1], 6, $i
+                        );
+                        $i++;
+                     ?>
                     </div>
                 <?php endforeach; ?>
             </body>
@@ -149,7 +180,7 @@ class Fari_TestUnit {
         $trace = ob_get_contents();
         ob_end_clean();
 
-        $trace = $this->trace(explode("\n", $trace));
+        $trace = explode(':', $this->trace(explode("\n", $trace)));
 
         // switch failed status?
         if ($result === TRUE) {
@@ -163,10 +194,7 @@ class Fari_TestUnit {
         $this->results[] = array (
             'name' => $testName,
             'result' => $result,
-            'trace' => $trace,
-            'expected' => (substr($expected, 0, 3) == 'is_') ?
-                substr($expected, 3) : Fari_ApplicationDiagnostics::formatVars($expected),
-            'test' => Fari_ApplicationDiagnostics::formatVars($test)
+            'trace' => $trace
         );
     }
 
@@ -179,8 +207,14 @@ class Fari_TestUnit {
             $position++;
             return $this->trace($trace, $position);
         } else {
-            // find the filename from previous function :)
-            return substr($trace[$position - 1], strpos($trace[$position - 1], "Fari_TestUnit"));
+            // find the filename from previous function & extract them :)
+            return substr(
+                strrchr(
+                    substr(
+                        $trace[$position - 1], strpos($trace[$position - 1], "Fari_TestUnit")
+                    ), '['
+                ), 1, -1
+            );
         }
     }
 
