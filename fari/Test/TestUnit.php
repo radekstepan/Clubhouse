@@ -15,7 +15,7 @@
  * A simple unit testing class, similar to CodeIgniter and Symfony.
  *
  * @copyright Copyright (c) 2008, 2010 Radek Stepan
- * @package   Fari Framework\Application
+ * @package   Fari Framework\Test
  */
 class Fari_TestUnit {
 

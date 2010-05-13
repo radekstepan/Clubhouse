@@ -29,6 +29,9 @@ class Table {
     /** @var array of data to save */
     public $data;
 
+    /** @var limit the fields we return in find* statements */
+    private $select;
+
     /** @var array of data in the where clause */
     private $where;
 
@@ -41,6 +44,9 @@ class Table {
 
     /** @var string join table string */
     private $join;
+
+    /** @Fari_DbSubject observer subject for logging */
+    private $logger;
 
     /**
 	 * Setup a database connection (to a table)
@@ -62,7 +68,34 @@ class Table {
             // ... yes, get the name of the class as the name of the table
             $this->table = get_called_class();
         }
+
+        // attach an observer
+        $this->logger = new Fari_DbSubject();
+        $this->logger->attach(new Fari_ApplicationLogger());
     }
+
+    /**
+     * Rails-like calls, captures undefined methods
+     * @link http://techportal.ibuildings.com/2010/01/11/learning-php-5-3-by-writing-your-own-orm/
+     * @param string $method
+     * @param mixed $params
+     */
+    //public static function __callStatic($method, $params) {
+    //    try {
+    //        // determine the method called
+    //        if (!preg_match('/^(find|findFirst|count)By(\w+)$/', $method, $matches)) {
+    //            throw new Fari_Exception("Call to undefined method {$method}");
+    //        }
+    //    } catch (Fari_Exception $exception) { $exception->fire(); }
+    //
+    //    $criteriaKeys = explode('_And_', preg_replace('/([a-z0-9])([A-Z])/', '$1_$2', $matches[2]));
+    //    $criteriaKeys = array_map('strtolower', $criteriaKeys);
+    //    $criteriaValues = array_slice($params, 0, count($criteriaKeys));
+    //    $criteria = array_combine($criteriaKeys, $criteriaValues);
+    //
+    //    $method = $matches[1];
+    //    return static::$method($criteria);
+    //}
 
     /**
      * Magic setter.
@@ -76,19 +109,34 @@ class Table {
     /**
      * Save a whole array of items for a query.
      * @param array of key:value
+     * @return Table, call with add()
      */
     public function set(array $values) {
         foreach ($values as $key => $value) $this->$key = $value;
+
+        return $this;
     }
 
     /**
      * A where clause.
-     * @param array $where column => value pair
+     * @param mixed $where array(column => value pair) or string ID
      * @return result from a db method called
      */
-    public function where(array $where) {
-        // set the values
-        $this->where = $where;
+    public function where($where) {
+        // are we passing a formed array?
+        if (is_array($where)) {
+            // set the values
+            $this->where = $where;
+        // we must mean an ID then...
+        } else {
+            try {
+                // check that we have actually passed an int
+                if (!Fari_Filter::isInt($where)) {
+                    throw new Fari_Exception("'{$where}' is not a valid ID value.");
+                // ...otherwise set the value under ID column
+                } else $this->where = array('id' => $where);
+            } catch (Fari_Exception $exception) { $exception->fire(); }
+        }
 
         // have we defined the db method first?
         try { if (!isset($this->method)) {
@@ -111,6 +159,21 @@ class Table {
     }
 
     /**
+     * Specify the columns we want to retrieve.
+     * @param mixed $columns values
+     * @return Table, need to define a where clause
+     */
+    public function select($columns) {
+        if (is_array($columns)) {
+            $this->select = implode(', ', $columns);
+        } else {
+            $this->select = $columns;
+        }
+
+        return $this;
+    }
+
+    /**
      * Find item(s) in a table.
      * @param string $order
      * @param integer $limit
@@ -129,7 +192,20 @@ class Table {
      * @param string $order
      * @return Table, need to define a where clause
      */
-    public function findFirst($order=NULL) {
+    public function findFirst($order='id ASC') {
+        $this->order = $order;
+        $this->limit = 1;
+        $this->method = '_find';
+
+        return $this;
+    }
+
+    /**
+     * Find last occurence of an item in a table.
+     * @param string $order
+     * @return Table, need to define a where clause
+     */
+    public function findLast($order='id DESC') {
         $this->order = $order;
         $this->limit = 1;
         $this->method = '_find';
@@ -205,9 +281,13 @@ class Table {
 
     /**
      * Insert data into a table.
+     * @param array $values optionally pass them directly instead of using set() first
      * @return id of the inserted row
      */
-    public function add() {
+    public function add(array $values=NULL) {
+        // if we've passed an array, save it first
+        if (isset($values)) $this->set($values);
+
         // SQL query, bind data
         $sql = "INSERT INTO {$this->table} ({$this->getColumns()}) VALUES ({$this->prepareData()})";
 
@@ -219,6 +299,9 @@ class Table {
         // execute query
         $statement->execute();
 
+        // notify
+        $this->logger->notify($this->toString($sql));
+
         // reset the saved data
         $this->clearData();
 
@@ -227,12 +310,34 @@ class Table {
     }
 
     /**
+     * You can run a generic SQL SELECT query.
+     * @param string $sql (unescaped, unfiltered, unchecked)
+     * @return array result set
+     */
+    public function findBySql($sql) {
+        // prepare SQL
+        $statement = $this->db->prepare($sql);
+        // bind where clause
+        $statement = $this->bindWhere($statement);
+
+        // notify
+        $this->logger->notify($this->toString($sql));
+
+        // reset data
+        $this->clearData();
+
+        // execute query and return an array result
+        $statement->execute();
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
      * Find items in a table and return them.
      * @return array result set
      */
     private function _find() {
         // SQL query
-        $sql = "SELECT * FROM {$this->getTableQuery()} {$this->getWhereQuery()}";
+        $sql = "SELECT {$this->getSelectedColumns()} FROM {$this->getTableQuery()} {$this->getWhereQuery()}";
         if (isset($this->order)) $sql .= " ORDER BY {$this->order}";
         if (isset($this->limit)) $sql .= " LIMIT {$this->limit}";
 
@@ -240,6 +345,9 @@ class Table {
         $statement = $this->db->prepare($sql);
         // bind where clause
         $statement = $this->bindWhere($statement);
+
+        // notify
+        $this->logger->notify($this->toString($sql));
 
         // reset data
         $this->clearData();
@@ -262,6 +370,9 @@ class Table {
         $statement = $this->db->prepare($sql);
         // bind where clause
         $statement = $this->bindWhere($statement);
+
+        // notify
+        $this->logger->notify($this->toString($sql));
 
         // reset data
         $this->clearData();
@@ -286,6 +397,9 @@ class Table {
         // bind where clause
         $statement = $this->bindWhere($statement);
 
+        // notify
+        $this->logger->notify($this->toString($sql));
+
         // reset data
         $this->clearData();
 
@@ -306,6 +420,9 @@ class Table {
         $statement = $this->db->prepare($sql);
         // bind where clause
         $statement = $this->bindWhere($statement);
+
+        // notify
+        $this->logger->notify($this->toString($sql));
 
         // reset data
         $this->clearData();
@@ -363,6 +480,19 @@ class Table {
         
         return $this;
     }
+
+    /**
+     * Define the columns we want to retrieve in a select statement
+     * @return string
+     */
+    private function getSelectedColumns() {
+        if (isset($this->select)) {
+            return $this->select;
+        } else {
+            return '*';
+        }
+    }
+
 
     /**
      * Get a table query with optional join(s).
@@ -433,8 +563,15 @@ class Table {
         $result = '';
         $i = 0;
         foreach ($this->where as $column => $value) {
-            $result .= "{$column} {$this->findOperator($value)} :id{$i} AND ";
-            $i++;
+            // WHERE IN ()
+            if (($operator = $this->findOperator($value)) == 'IN') {
+                // no binding occurs...
+                $result .= "{$column} {$value} AND ";
+            // the rest...
+            } else {
+                $result .= "{$column} {$operator} :id{$i} AND ";
+                $i++;
+            }
         }
         
         return substr($result, 0, -5);
@@ -478,6 +615,8 @@ class Table {
         } elseif (strpos($value, '<') !== FALSE) { return '<';
         // !=
         } elseif (strpos($value, '!=') !== FALSE) { return '!=';
+        // IN
+        } elseif (strpos($value, 'IN') !== FALSE) { return 'IN';
         // =
         } else return '=';
     }
@@ -502,6 +641,28 @@ class Table {
      */
     private function clearData() {
         $this->data = array();
+    }
+
+    /**
+     * Bind SQL query into a string.
+     * @param string $sql statement
+     * @return string
+     */
+    private function toString($sql) {
+        $i = 0;
+        // traverse WHERE clause and get binded values...
+        foreach ($this->where as $column => $value) {
+            // ... replace them with actual values
+            $sql = preg_replace("/:id{$i}/", $value, $sql);
+            $i++;
+        }
+
+        // and data during INSERT
+        foreach ($this->data as $column => $value) {
+            $sql = preg_replace("/:{$column}/", $value, $sql);
+        }
+        
+        return $sql;
     }
     
 }

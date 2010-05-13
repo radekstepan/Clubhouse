@@ -23,7 +23,10 @@ class InvitationsPresenter extends Fari_ApplicationPresenter {
     private $user = FALSE;
     private $accounts;
 
-    public function startup() {
+    /**
+     * Applied automatically before any action is called.
+     */
+    public function filterStartup() {
         // is user authenticated? account owner only
         try {
             $this->user = new User('admin');

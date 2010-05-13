@@ -22,8 +22,11 @@ class GuestPresenter extends Fari_ApplicationPresenter {
     
     private $guestUser;
     private $room;
-	
-	public function startup() {
+
+    /**
+     * Applied automatically before any action is called.
+     */
+	public function filterStartup() {
         $this->room = new Room();
     }
 

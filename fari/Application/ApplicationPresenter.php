@@ -32,7 +32,7 @@ abstract class Fari_ApplicationPresenter {
     private $cache = FALSE;
 
 	/**
-     * Set registry when new object gets instantiated and use classname when startup().
+     * Set registry when new object gets instantiated and use classname when filterStartup().
      * @param Fari_ApplicationRoute setup in the Request
 	 */
 	function __construct(Fari_ApplicationRoute $route) {
@@ -44,7 +44,7 @@ abstract class Fari_ApplicationPresenter {
         $this->bag = new Fari_Bag();
 
         // initialization function called before anything else if is defined
-		if (method_exists($this->request->getPresenter(), startup)) $this->startup();
+		if (method_exists($this->request->getPresenter(), filterStartup)) $this->filterStartup();
 	}
 
 	/**

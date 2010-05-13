@@ -22,7 +22,10 @@ class LobbyPresenter extends Fari_ApplicationPresenter {
 
     private $user = FALSE;
 	
-	public function startup() {
+    /**
+     * Applied automatically before any action is called.
+     */
+	public function filterStartup() {
         // is user authenticated? guests not allowed
         try {
             $this->user = new User(array('admin', 'registered'));
@@ -40,6 +43,13 @@ class LobbyPresenter extends Fari_ApplicationPresenter {
             }
         }
 	}
+
+    public function filterAjax() {
+        // is this Ajax?
+        if (!$this->request->isAjax()) {
+            $this->render('error404/javascript');
+        }
+    }
 
 
 
@@ -69,14 +79,11 @@ class LobbyPresenter extends Fari_ApplicationPresenter {
      * @uses Ajax
 	 */
     public function actionRooms() {
-        // is this Ajax?
-        if ($this->request->isAjax()) {
-            // clear out old users
-            $system = new System();
-            $this->response($system->lobbyRooms($this->user->getId(), $this->user->isAdmin()), 'json');
-        } else {
-            $this->render('error404/javascript');
-        }
+        $this->filterAjax();
+
+        // clear out old users
+        $system = new System();
+        $this->response($system->lobbyRooms($this->user->getId(), $this->user->isAdmin()), 'json');
     }
 
 
@@ -91,14 +98,10 @@ class LobbyPresenter extends Fari_ApplicationPresenter {
      * @uses Ajax
 	 */
     public function actionUsers() {
-        // is this Ajax?
-        if ($this->request->isAjax()) {
-            $system = new System();
-            
-            $this->response($system->userCount(), 'json');
-        } else {
-            $this->render('error404/javascript');
-        }
+        $this->filterAjax();
+
+        $system = new System();
+        $this->response($system->userCount(), 'json');
     }
 
 }

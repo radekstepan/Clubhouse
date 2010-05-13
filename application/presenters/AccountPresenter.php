@@ -22,7 +22,10 @@ class AccountPresenter extends Fari_ApplicationPresenter {
 
     private $accounts;
 
-    public function startup() {
+    /**
+     * Applied automatically before any action is called.
+     */
+    public function filterStartup() {
         $this->accounts = new Accounts();
     }
 

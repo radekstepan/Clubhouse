@@ -20,7 +20,10 @@
  */
 class InstallationPresenter extends Fari_ApplicationPresenter {
 
-    public function startup() {
+    /**
+     * Applied automatically before any action is called.
+     */
+    public function filterStartup() {
         if (Fari_DbSqLite::isDbWritable()) $this->response->redirect('/error404/');
     }
 

@@ -21,8 +21,17 @@
 class RoomPresenter extends Fari_ApplicationPresenter {
 
     private $user = FALSE;
-	
-	public function startup() {
+
+
+
+    /********************* filters *********************/
+
+
+
+    /**
+     * Applied automatically before any action is called.
+     */
+	public function filterStartup() {
         // is user authenticated?
         try {
             $this->user = new User();
@@ -34,6 +43,21 @@ class RoomPresenter extends Fari_ApplicationPresenter {
         $this->bag->userId = $this->user->getId();
         $this->bag->shortName = $this->user->getShortName();
 	}
+
+    /**
+     * Check for AJAX request and roomId is an integer.
+     * @param integer $roomId
+     */
+    public function filterRoomId($roomId) {
+        // is this Ajax?
+        if ($this->request->isAjax()) {
+            if (!Fari_Filter::isInt($roomId)) {
+                $this->response('bye', 'json');
+            }
+        } else {
+            $this->render('error404/javascript');
+        }
+    }
 
 
 
@@ -100,7 +124,11 @@ class RoomPresenter extends Fari_ApplicationPresenter {
         $this->bag->room = $room->getDescription($roomId);
     }
 
+
+
     /********************* view leave room *********************/
+
+
 
     /**
 	 * Leave the room
@@ -127,7 +155,11 @@ class RoomPresenter extends Fari_ApplicationPresenter {
         $this->response->redirect('/');
 	}
 
+
+
     /********************* action create a room *********************/
+
+
 
     /**
 	 * Create a new room
@@ -155,7 +187,11 @@ class RoomPresenter extends Fari_ApplicationPresenter {
         }
 	}
 
+
+
     /********************* action lock room *********************/
+
+
 
     /**
 	 * Lock the room, no new users will be allowed to enter
@@ -163,35 +199,30 @@ class RoomPresenter extends Fari_ApplicationPresenter {
      * @uses Ajax
 	 */
 	public function actionLock($roomId) {
-        // is this Ajax?
-        if ($this->request->isAjax()) {
-            if (Fari_Filter::isInt($roomId)) {
+        $this->filterRoomId($roomId);
 
-                try {
-                    // are we allowed to enter?
-                    $this->user->canEnter($roomId);
+        try {
+            // are we allowed to enter?
+            $this->user->canEnter($roomId);
 
-                    $room = new Room();
-                    $status = $room->lock($roomId);
+            $room = new Room();
+            $status = $room->lock($roomId);
 
-                    // message about it withour showing the timestamp in transcript
-                    $time = mktime();
-                    $message = new MessageSpeak($roomId, $time, '1');
-                    $message->lock($roomId, $this->user->getShortName(), $status);
+            // message about it withour showing the timestamp in transcript
+            $time = mktime();
+            $message = new MessageSpeak($roomId, $time, '1');
+            $message->lock($roomId, $this->user->getShortName(), $status);
 
-                } catch (UserNotAuthorizedException $e) {
-                    $this->response('bye', 'json');
-                }
-                
-            } else {
-                $this->response('bye', 'json');
-            }
-        } else {
-            $this->render('error404/javascript');
+        } catch (UserNotAuthorizedException $e) {
+            $this->response('bye', 'json');
         }
 	}
 
+
+
     /********************* action poll room *********************/
+
+
 
     /**
 	 * Get name, topic, participants, locked and guest statuses and files for the current room
@@ -199,30 +230,25 @@ class RoomPresenter extends Fari_ApplicationPresenter {
      * @uses Ajax
 	 */
     public function actionPoll($roomId) {
-        // is this Ajax?
-        if ($this->request->isAjax()) {
-            if (Fari_Filter::isInt($roomId)) {
+        $this->filterRoomId($roomId);
 
-                try {
-                    // are we allowed to enter?
-                    $this->user->canEnter($roomId);
+        try {
+            // are we allowed to enter?
+            $this->user->canEnter($roomId);
 
-                    $room = new Room();
-                    $this->response($room->poll($roomId), 'json');
+            $room = new Room();
+            $this->response($room->poll($roomId), 'json');
 
-                } catch (UserNotAuthorizedException $e) {
-                    $this->response('bye', 'json');
-                }
-
-            } else {
-                $this->response('bye', 'json');
-            }
-        } else {
-            $this->render('error404/javascript');
+        } catch (UserNotAuthorizedException $e) {
+            $this->response('bye', 'json');
         }
     }
 
+
+
     /********************* action set new topic *********************/
+
+
 
     /**
 	 * Set a new topic or clear it
@@ -230,39 +256,34 @@ class RoomPresenter extends Fari_ApplicationPresenter {
      * @uses Ajax
 	 */
 	public function actionTopic($roomId) {
-        // is this Ajax?
-        if ($this->request->isAjax()) {
-            if (Fari_Filter::isInt($roomId)  && $this->request->isPost()) {
+        $this->filterRoomId($roomId);
 
-                try {
-                    // are we allowed to enter?
-                    $this->user->canEnter($roomId);
+        try {
+            // are we allowed to enter?
+            $this->user->canEnter($roomId);
 
-                    $topic = $this->request->getPost('topic');
+            $topic = $this->request->getPost('topic');
 
-                    $room = new Room();
-                    $room->topic($roomId, $topic = $this->request->getPost('topic'));
+            $room = new Room();
+            $room->topic($roomId, $topic = $this->request->getPost('topic'));
 
-                    // message about it
-                    $time = mktime();
-                    $message = new MessageSpeak($roomId, $time);
-                    $message->topic($roomId, $this->user->getShortName(), $topic);
+            // message about it
+            $time = mktime();
+            $message = new MessageSpeak($roomId, $time);
+            $message->topic($roomId, $this->user->getShortName(), $topic);
 
-                    $this->response($topic, 'json');
+            $this->response($topic, 'json');
 
-                } catch (UserNotAuthorizedException $e) {
-                    $this->response('bye', 'json');
-                }
-
-            } else {
-                $this->response('bye', 'json');
-            }
-        } else {
-            $this->render('error404/javascript');
+        } catch (UserNotAuthorizedException $e) {
+            $this->response('bye', 'json');
         }
 	}
 
+
+
     /********************* action set guest status *********************/
+
+
 
     /**
 	 * Provide guest access to the room
@@ -270,26 +291,17 @@ class RoomPresenter extends Fari_ApplicationPresenter {
      * @uses Ajax
 	 */
 	public function actionGuest($roomId) {
-        // is this Ajax?
-        if ($this->request->isAjax()) {
-            if (Fari_Filter::isInt($roomId)) {
+        $this->filterRoomId($roomId);
 
-                try {
-                    // are we allowed to enter?
-                    $this->user->canEnter($roomId);
+        try {
+            // are we allowed to enter?
+            $this->user->canEnter($roomId);
 
-                    $room = new Room();
-                    $this->response($room->guest($roomId, $this->user->getShortName()), 'json');
+            $room = new Room();
+            $this->response($room->guest($roomId, $this->user->getShortName()), 'json');
 
-                } catch (UserNotAuthorizedException $e) {
-                    $this->response('bye', 'json');
-                }
-
-            } else {
-                $this->response('bye', 'json');
-            }
-        } else {
-            $this->render('error404/javascript');
+        } catch (UserNotAuthorizedException $e) {
+            $this->response('bye', 'json');
         }
 	}
 

@@ -21,8 +21,11 @@
 class SearchPresenter extends Fari_ApplicationPresenter {
 
     private $user = FALSE;
-	
-	public function startup() {
+
+    /**
+     * Applied automatically before any action is called.
+     */
+	public function filterStartup() {
         // is user authenticated?
         try {
             $this->user = new User();

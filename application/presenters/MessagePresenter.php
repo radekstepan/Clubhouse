@@ -22,8 +22,11 @@ class MessagePresenter extends Fari_ApplicationPresenter {
 
     private $user = FALSE;
     private $room;
-	
-	public function startup() {
+
+    /**
+     * Applied automatically before any action is called.
+     */
+	public function filterStartup() {
         // is this Ajax?
         if ($this->request->isAjax()) {
             // is user authenticated?

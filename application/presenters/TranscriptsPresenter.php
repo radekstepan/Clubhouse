@@ -23,8 +23,11 @@ class TranscriptsPresenter extends Fari_ApplicationPresenter {
     private $user = FALSE;
 
     private $pagination = 8;
-	
-	public function startup() {
+
+    /**
+     * Applied automatically before any action is called.
+     */
+	public function filterStartup() {
         // is user authenticated? guests not allowed
         try {
             $this->user = new User(array('admin', 'registered'));

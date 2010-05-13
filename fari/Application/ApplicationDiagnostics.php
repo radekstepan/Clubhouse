@@ -143,7 +143,7 @@ class Fari_ApplicationDiagnostics {
 		ob_end_clean();
 		
 		// are we on a production server?
-		if (!REPORT_ERR) self::productionMessage($message);
+        if (Fari_ApplicationEnvironment::isProduction()) self::productionMessage($message);
 
         // an Ajax request, display a lightweight message
         if (!empty($_SERVER['HTTP_X_REQUESTED_WITH'])

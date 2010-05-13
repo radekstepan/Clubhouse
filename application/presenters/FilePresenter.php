@@ -22,8 +22,11 @@ class FilePresenter extends Fari_ApplicationPresenter {
 
     private $user = FALSE;
     private $file;
-	
-	public function startup() {
+
+    /**
+     * Applied automatically before any action is called.
+     */
+	public function filterStartup() {
         // is user authenticated?
         try {
             $this->user = new User();
