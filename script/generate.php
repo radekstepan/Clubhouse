@@ -71,7 +71,7 @@ switch ($type) {
         break;
     default:
         // fail, undetermined generator type called
-        message("Couldn't find '{$type}' generator try -help", 'red');
+        message("Couldn't find '{$type}' generator try 'help'", 'red');
 }
 
 
@@ -97,10 +97,9 @@ class {$name}Presenter extends Fari_ApplicationPresenter {
 
     /**
      * Applied automatically before any action is called.
+     * @example use it to authenticate users or setup locales
      */
-    public function filterStartup() {
-        
-    }
+    public function filterStartup() { }
 
     /**
      * Default action.
@@ -373,9 +372,19 @@ $userModelCode = <<<CODE
 /**
  * Authenticated user.
  *
+ * @example   This object will throw an exception if user is not authenticated, use in admin
  * @package   Application\Models\\$prefix
  */
-class {$prefix}User extends Fari_AuthenticatorSimple {}
+class {$prefix}User extends Fari_AuthenticatorSimple {
+
+        public function __construct() {
+            parent::__construct();
+
+            // no entry, we are not logged in, fail the constructor
+            if (!\$this->isAuthenticated()) throw new {$prefix}UserNotAuthenticatedException();
+        }
+
+}
 
 CODE;
 

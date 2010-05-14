@@ -109,6 +109,14 @@ class Table {
      * @param mixed $value to save
      */
     public function __set($column, $value) {
+        // extract set prefix
+        try {
+            if (substr($column, 0, 3) !== 'set') {
+                throw new Fari_Exception("Prepend 'set' before the column name.");
+            } else $column = substr($column, 3);
+        } catch (Fari_Exception $exception) { $exception->fire(); }
+
+        // save
         $this->data[$column] = $value;
  	}
 
@@ -118,7 +126,12 @@ class Table {
      * @return Table, call with add()
      */
     public function set(array $values) {
-        foreach ($values as $key => $value) $this->$key = $value;
+        foreach ($values as $key => $value) {
+            // prepend set prefix
+            $key = 'set' . $key;
+            // set
+            $this->$key = $value;
+        }
 
         return $this;
     }
