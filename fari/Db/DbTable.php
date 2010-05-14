@@ -97,6 +97,12 @@ class Table {
     //    return static::$method($criteria);
     //}
 
+
+
+    /********************* set values *********************/
+
+
+
     /**
      * Magic setter.
      * @param mixed $column in a table
@@ -146,17 +152,22 @@ class Table {
         // method call
         $result = $this->{$this->method}();
         // if we are finding first result...
-        if (($this->limit == 1 && $this->method == '_find')) {
-            // set result internally (so we can easily update rows etc...)
-            $this->set($result);
-            // return a bag of values
-            $bag = new Fari_Bag();
-            $bag->set($result);
-            return $bag;
-        }
+        //if (($this->limit == 1 && $this->method == '_find')) {
+        //    // set result internally (so we can easily update rows etc...)
+        //    $this->set($result);
+        //    // return a bag of values
+        //    $bag = new Fari_Bag();
+        //    $bag->set($result);
+        //}
         // return the result from a method call
         return $result;
     }
+
+
+
+    /********************* columns select *********************/
+
+
 
     /**
      * Specify the columns we want to retrieve.
@@ -172,6 +183,12 @@ class Table {
 
         return $this;
     }
+
+
+
+    /********************* find queries *********************/
+
+
 
     /**
      * Find item(s) in a table.
@@ -225,6 +242,12 @@ class Table {
         return $this->_find();
     }
 
+
+
+    /********************* remove queries *********************/
+
+
+
     /**
      * Remove item(s) from a table.
      * @return Table, need to define a where clause
@@ -242,6 +265,12 @@ class Table {
     public function removeAll() {
         return $this->_remove();
     }
+
+
+
+    /********************* update queries *********************/
+
+
 
     /**
      * Update rows in a table.
@@ -261,6 +290,12 @@ class Table {
         return $this->_update();
     }
 
+
+
+    /********************* counter queries *********************/
+
+
+
     /**
      * Count items in a table.
      * @return Table, need to define a where clause
@@ -277,6 +312,21 @@ class Table {
      */
     public function countAll() {
         return $this->_count();
+    }
+
+
+
+    /********************* insert queries *********************/
+
+
+
+    /**
+     * Insert data into a table.
+     * @param array $values optionally pass them directly instead of using set() first
+     * @return id of the inserted row
+     */
+    public function save(array $values=NULL) {
+        $this->add($values);
     }
 
     /**
@@ -296,11 +346,11 @@ class Table {
         // bind data
         $statement = $this->bindData($statement);
 
-        // execute query
-        $statement->execute();
-
         // notify
         $this->logger->notify($this->toString($sql));
+
+        // execute query
+        $statement->execute();
 
         // reset the saved data
         $this->clearData();
@@ -308,6 +358,12 @@ class Table {
         // return id of the row
         return $this->db->lastInsertId();
     }
+
+
+
+    /********************* generic query *********************/
+
+
 
     /**
      * You can run a generic SQL SELECT query.
@@ -330,6 +386,12 @@ class Table {
         $statement->execute();
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
+
+
+
+    /********************* internal *********************/
+
+
 
     /**
      * Find items in a table and return them.

@@ -51,7 +51,7 @@ class Fari_TestUnit {
      * @param mixed $expected what do we expect
      * @param string $testName for the test we run
      */
-    public function isStrict($test, $expected, $testName='undefined') {
+    public function isStrictly($test, $expected, $testName='undefined') {
         $this->saveTest($test, $expected, ($test === $expected), $testName);
     }
 
@@ -61,7 +61,7 @@ class Fari_TestUnit {
      * @param mixed $expected what do we expect
      * @param string $testName for the test we run
      */
-    public function isNotStrict($test, $expected, $testName='undefined') {
+    public function isNotStrictly($test, $expected, $testName='undefined') {
         $this->saveTest($test, $expected, ($test !== $expected), $testName);
     }
 
