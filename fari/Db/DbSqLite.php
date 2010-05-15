@@ -14,6 +14,7 @@
 /**
  * Creates and setups an SQLite database.
  *
+ * @deprecated
  * @copyright Copyright (c) 2008, 2010 Radek Stepan
  * @package   Fari Framework\Db
  */

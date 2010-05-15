@@ -26,6 +26,9 @@ class Table {
     /** @var string table name */
     public $table;
 
+    /** @var string primary key to use when determining if row column value is unique etc */
+    public $primaryKey = 'id';
+
     /** @var array of data to save */
     public $data;
 
@@ -37,7 +40,7 @@ class Table {
 
     /** @var string private name of method to call from a where clause */
     private $method;
-    
+
     /** @var ordering and result set limit */
     private $order;
     private $limit;
@@ -57,7 +60,7 @@ class Table {
 	 */
     public function __construct($table=NULL) {
         // db connection
-        $this->db = Fari_DbPdo::getConnection(); 
+        $this->db = Fari_DbPdo::getConnection();
 
         // table name exists?
         if (isset($table)) {
@@ -80,6 +83,11 @@ class Table {
 
         // attach validator
         $this->validator = $this->attachValidator();
+
+        // while we are at it, form relationships with other tables
+        $relationships = new Fari_DbTableRelationships();
+        // relate this shi...
+        $relationships->relate(&$this);
     }
 
     /**
@@ -177,7 +185,7 @@ class Table {
         try { if (!isset($this->method)) {
             throw new Fari_Exception('First specify the method you would like to execute, then the where clause.'); }
         } catch (Fari_Exception $exception) { $exception->fire(); }
-        
+
         // method call
         $result = $this->{$this->method}();
         // if we are finding first result...
@@ -226,6 +234,11 @@ class Table {
      * @return Table, need to define a where clause
      */
     public function find($order=NULL, $limit=NULL) {
+        if (isset($order)) {
+            assert("strpos(\$order, 'ASC') !== FALSE OR strpos(\$order, 'DESC'); // malformed ORDER clause");
+            assert("is_int(\$limit); // limit needs to be an integer");
+        }
+
         $this->order = $order;
         $this->limit = $limit;
         $this->method = '_find';
@@ -239,6 +252,10 @@ class Table {
      * @return Table, need to define a where clause
      */
     public function findFirst($order='id ASC') {
+        if (isset($order)) {
+            assert("strpos(\$order, 'ASC') !== FALSE OR strpos(\$order, 'DESC'); // malformed ORDER clause");
+        }
+
         $this->order = $order;
         $this->limit = 1;
         $this->method = '_find';
@@ -252,6 +269,10 @@ class Table {
      * @return Table, need to define a where clause
      */
     public function findLast($order='id DESC') {
+        if (isset($order)) {
+            assert("strpos(\$order, 'ASC') !== FALSE OR strpos(\$order, 'DESC'); // malformed ORDER clause");
+        }
+
         $this->order = $order;
         $this->limit = 1;
         $this->method = '_find';
@@ -266,6 +287,11 @@ class Table {
      * @return array result set
      */
     public function findAll($order=NULL, $limit=NULL) {
+        if (isset($order)) {
+            assert("strpos(\$order, 'ASC') !== FALSE OR strpos(\$order, 'DESC'); // malformed ORDER clause");
+            assert("is_int(\$limit); // limit needs to be an integer");
+        }
+
         $this->order = $order;
         $this->limit = $limit;
         return $this->_find();
@@ -307,7 +333,7 @@ class Table {
      */
     public function update() {
         $this->method = '_update';
-        
+
         return $this;
     }
 
@@ -331,7 +357,7 @@ class Table {
      */
     public function count() {
         $this->method = '_count';
-        
+
         return $this;
     }
 
@@ -568,7 +594,7 @@ class Table {
 
             $this->join .= " JOIN {$table} ON {$this->table}.{$on}={$table}.{$on}";
         }
-        
+
         return $this;
     }
 
@@ -649,7 +675,7 @@ class Table {
             // run validation on us
             $this->validator->validate($this);
         }
-        
+
         return $statement;
     }
 
@@ -671,7 +697,7 @@ class Table {
                 $i++;
             }
         }
-        
+
         return substr($result, 0, -5);
     }
 
@@ -687,11 +713,11 @@ class Table {
             if (strpos($value, '*') !== FALSE) $value = str_replace('*', '%', $value);
             // strip any operators and whitespace from the value
             $value = preg_replace('/[>|<|=|\s\s+]/', '', $value);
-            
+
             $statement->bindValue(":id{$i}", $value, $this->valueType($value));
             $i++;
         }
-        
+
         return $statement;
     }
 
@@ -759,8 +785,8 @@ class Table {
         foreach ($this->data as $column => $value) {
             $sql = preg_replace("/:{$column}/", $value, $sql);
         }
-        
+
         return $sql;
     }
-    
+
 }

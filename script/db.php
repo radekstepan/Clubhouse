@@ -13,7 +13,7 @@
 
 
 /**
- * Creates database tables from schemas
+ * Creates database tables from schemas.
  *
  * @copyright Copyright (c) 2008, 2010 Radek Stepan
  * @package   Scripts\

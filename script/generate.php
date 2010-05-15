@@ -187,6 +187,9 @@ class {$name} extends Table {
     /** @var string table name */
     public \$table = '{$lowercase}';
 
+    /** @var string a "has one" to another table through primary key */
+    public \$hasOne;
+
     /** @var array validates the presence of column data */
     public \$validatesPresenceOf = array('id');
 

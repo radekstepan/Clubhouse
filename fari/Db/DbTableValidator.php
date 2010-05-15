@@ -12,6 +12,16 @@
 
 
 /**
+ * Thrown on data validation.
+ *
+ * @copyright Copyright (c) 2008, 2010 Radek Stepan
+ * @package   Fari Framework\Db
+ */
+class TableException extends Exception {}
+
+
+
+/**
  * Validates queries, entirely customizable.
  *
  * @copyright Copyright (c) 2008, 2010 Radek Stepan
@@ -50,13 +60,13 @@ class Fari_DbTableValidator {
     private function validatePresenceOf(Table &$table) {
         assert('is_array($table->validatesPresenceOf); // needs to be an array');
         foreach ($table->validatesPresenceOf as $column) {
-            
+
             // exists?
             if (!array_key_exists($column, $table->data)
                 // not empty?
                 || empty($table->data[$column])
                 )
-                    throw new Fari_DbTableValidatorException("'$column' column needs to be set");
+                    throw new TableException("'$column' column needs to be set");
         }
     }
 
@@ -72,17 +82,15 @@ class Fari_DbTableValidator {
             $column = key($length);
             $length = end($length);
             assert('is_int($length); // needs to be an integer');
-            
+
             // exists?
             if (!array_key_exists($column, $table->data)
                 // not empty?
                 || empty($table->data[$column])
-                // integer?
-                || !is_int($table->data[$column])
                 // length?
-                || $table->data[$column] < $length
+                || strlen($table->data[$column]) < $length
                 )
-                    throw new Fari_DbTableValidatorException("'$column' column is too short");
+                    throw new TableException("'$column' column is too short");
         }
     }
 
@@ -97,7 +105,7 @@ class Fari_DbTableValidator {
 
             // exists?
             if (!array_key_exists($column, $table->data)) {
-                throw new Fari_DbTableValidatorException("'$column' column does not exist");
+                throw new TableException("'$column' column does not exist");
             } else {
                 // need to construct a new Table not to overwrite anything in the object we are validating
                 $test = new Table($table->table);
@@ -105,7 +113,14 @@ class Fari_DbTableValidator {
                 $result = $test->findFirst()->where(array($column => $table->data[$column]));
                 unset($test);
                 if (!empty($result)) {
-                    throw new Fari_DbTableValidatorException("'$column' value is not unique");
+                    // we better have primary key defined
+                    assert('!empty($table->primaryKey); // primary key has to be defined');
+                    // we might be editing 'us' thus check for ID... not perfect all!
+                    if (array_key_exists($table->primaryKey, $table->where)) {
+                        if ($table->where[$table->primaryKey] != $result[$table->primaryKey]) {
+                            throw new TableException("'$column' value is not unique");
+                        }
+                    }
                 }
             }
         }
@@ -122,16 +137,16 @@ class Fari_DbTableValidator {
             assert('is_array($regex); // needs to be an array, column => regex');
             $column = key($regex);
             $regex = end($regex);
-            
+
             // exists?
             if (!array_key_exists($column, $table->data)) {
-                throw new Fari_DbTableValidatorException("'$column' column does not exist");
+                throw new TableException("'$column' column does not exist");
             } else {
                 // regex match?
                 if (preg_match($regex, $table->data[$column]) != 1)
-                    throw new Fari_DbTableValidatorException("'$column' column does not match the format");
+                    throw new TableException("'$column' column does not match the format");
             }
         }
     }
-    
+
 }

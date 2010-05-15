@@ -14,6 +14,7 @@
 /**
  * An implementation of SQlite2 interface.
  *
+ * @deprecated
  * @copyright Copyright (c) 2008, 2010 Radek Stepan
  * @package   Fari Framework\Db
  */

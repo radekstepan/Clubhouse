@@ -14,6 +14,7 @@
 /**
  * Install the SQLite database.
  *
+ * @deprecated
  * @copyright Copyright (c) 2010 Radek Stepan
  * @package   Clubhouse\Models\Installation
  */
