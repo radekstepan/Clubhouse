@@ -46,7 +46,7 @@ class Table {
     private $limit;
 
     /** @var string join table string */
-    private $join;
+    public $join;
 
     /** @Fari_DbLogger observer subject for logging */
     private $logger;
@@ -177,7 +177,17 @@ class Table {
                 if (!Fari_Filter::isInt($where)) {
                     throw new Fari_Exception("'{$where}' is not a valid ID value.");
                 // ...otherwise set the value under ID column
-                } else $this->where = array('id' => $where);
+                } else {
+                    // primary key I can haz?
+                    assert('!empty($this->primaryKey); // primary key needs to be defined');
+                    // do we have a join?
+                    if (!empty($this->join)) {
+                        // prepend our table name then...
+                        $this->where = array("{$this->table}.{$this->primaryKey}" => $where);
+                    } else {
+                        $this->where = array($this->primaryKey => $where);
+                    }
+                }
             } catch (Fari_Exception $exception) { $exception->fire(); }
         }
 
@@ -234,13 +244,13 @@ class Table {
      * @return Table, need to define a where clause
      */
     public function find($order=NULL, $limit=NULL) {
-        if (isset($order)) {
-            assert("strpos(\$order, 'ASC') !== FALSE OR strpos(\$order, 'DESC'); // malformed ORDER clause");
+        $this->order = $this->checkOrder($order);
+
+        if (isset($limit)) {
             assert("is_int(\$limit); // limit needs to be an integer");
+            $this->limit = $limit;
         }
 
-        $this->order = $order;
-        $this->limit = $limit;
         $this->method = '_find';
 
         return $this;
@@ -251,12 +261,9 @@ class Table {
      * @param string $order
      * @return Table, need to define a where clause
      */
-    public function findFirst($order='id ASC') {
-        if (isset($order)) {
-            assert("strpos(\$order, 'ASC') !== FALSE OR strpos(\$order, 'DESC'); // malformed ORDER clause");
-        }
+    public function findFirst($order=NULL) {
+        $this->order = $this->checkOrder($order);
 
-        $this->order = $order;
         $this->limit = 1;
         $this->method = '_find';
 
@@ -268,12 +275,9 @@ class Table {
      * @param string $order
      * @return Table, need to define a where clause
      */
-    public function findLast($order='id DESC') {
-        if (isset($order)) {
-            assert("strpos(\$order, 'ASC') !== FALSE OR strpos(\$order, 'DESC'); // malformed ORDER clause");
-        }
+    public function findLast($order=NULL) {
+        $this->order = $this->checkOrder($order);
 
-        $this->order = $order;
         $this->limit = 1;
         $this->method = '_find';
 
@@ -287,12 +291,13 @@ class Table {
      * @return array result set
      */
     public function findAll($order=NULL, $limit=NULL) {
+        $this->order = $this->checkOrder($order);
+        
         if (isset($order)) {
-            assert("strpos(\$order, 'ASC') !== FALSE OR strpos(\$order, 'DESC'); // malformed ORDER clause");
             assert("is_int(\$limit); // limit needs to be an integer");
+            $this->limit = $limit;
         }
 
-        $this->order = $order;
         $this->limit = $limit;
         return $this->_find();
     }
@@ -457,7 +462,7 @@ class Table {
         $sql = "SELECT {$this->getSelectedColumns()} FROM {$this->getTableQuery()} {$this->getWhereQuery()}";
         if (isset($this->order)) $sql .= " ORDER BY {$this->order}";
         if (isset($this->limit)) $sql .= " LIMIT {$this->limit}";
-
+        
         // prepare SQL
         $statement = $this->db->prepare($sql);
         // bind where clause
@@ -787,6 +792,28 @@ class Table {
         }
 
         return $sql;
+    }
+
+    /**
+     * Will check that ORDER clause is properly formatted and prepend table name if needed.
+     * @param string $order
+     */
+    private function checkOrder($order=NULL) {
+        if (isset($order)) {
+            assert("strpos(\$order, 'ASC') !== FALSE OR strpos(\$order, 'DESC'); // malformed ORDER clause");
+        } else {
+            // order by primary key
+            assert("!empty(\$this->primaryKey); // primary key needs to be set");
+            // do we have a join?
+            if (isset($this->join) && !empty($this->join)) {
+                // prepend a table name
+                $order = "{$this->table}.{$this->primaryKey} ASC";
+            } else {
+                $order = "{$this->primaryKey} ASC";
+            }
+        }
+
+        return $order;
     }
 
 }

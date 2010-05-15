@@ -187,8 +187,15 @@ class {$name} extends Table {
     /** @var string table name */
     public \$table = '{$lowercase}';
 
-    /** @var string a "has one" to another table through primary key */
+    /********************* relationships *********************/
+
+    /** @var string a "one-to-one association" with another table(s) through primary keys */
     public \$hasOne;
+
+    /** @var string a "one-to-many association" with another table, e.g. a blog post has many comments */
+    public \$hasMany;
+
+    /********************* validation *********************/
 
     /** @var array validates the presence of column data */
     public \$validatesPresenceOf = array('id');
