@@ -14,6 +14,7 @@
 /**
  * Application model creates a database connection.
  *
+ * @deprecated
  * @copyright Copyright (c) 2008, 2010 Radek Stepan
  * @package   Fari Framework\Application
  */

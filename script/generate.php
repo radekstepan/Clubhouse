@@ -171,6 +171,9 @@ function newModel($name) {
 // determine the prefix of our model
 $prefix = current(preg_split('/(?<=\\w)(?=[A-Z])/', $name));
 
+// lowercase
+$lowercase = strtolower($name);
+
 $modelCode = <<<CODE
 <?php
 
@@ -179,51 +182,22 @@ $modelCode = <<<CODE
  *
  * @package Application\Models\\{$prefix}
  */
-class {$name} extends Fari_Bag {
+class {$name} extends Table {
 
-    /**
-     * Setup Table ORM through composition.
-     */
-    public function __construct() {
-        \$this->table = new Table('{$prefix}');
-    }
+    /** @var string table name */
+    public \$table = '{$lowercase}';
 
-    /**
-     * Find a row based on id.
-     * @param integer \$id parameter
-     * @return array
-     */
-    public function find(\$id) {
-        // preconditions
-        assert('Fari_Filter::isInt(\$id); // id parameter needs to be an integer');
-        return \$this->table->findFirst()->where(\$id);
-    }
+    /** @var array validates the presence of column data */
+    public \$validatesPresenceOf = array('id');
 
-    /**
-     * Save an array-row of values into the table.
-     * @param array \$values
-     */
-    public function save(\$values) {
-        // preconditions
-        assert('is_array(\$values); // values need to be in a form of array');
-        assert('!empty(\$values); // cannot save empty values');
+    /** @var array validates the length of columns */
+    public \$validatesLengthOf = array(array('password' => 5));
 
-        \$this->table->set(\$values)->save();
-    }
+    /** @var array validates uniqueness of columns */
+    public \$validatesUniquenessOf = array('username');
 
-    /**
-     * Unit testing.
-     */
-    public function unitTest() {
-        \$test = new Fari_TestUnit();
-
-        \$test->is(1, 1.0, 'validate ==');
-        \$test->isStrictly(1, 1.0, 'validate ===');
-        \$test->compare(2, '>', 1, 'validate >');
-        \$test->isType(1, 'int', 'integer?');
-
-        \$test->report();
-    }
+    /** @var array validates regex format of a column */
+    public \$validatesFormatOf = array(array('zip' => '/^([0-9]{5})(-[0-9]{4})?$/i'));
 
 }
 CODE;

@@ -14,6 +14,7 @@
 /**
  * Creates an instance of PDO connection.
  *
+ * @deprecated
  * @copyright Copyright (c) 2008, 2010 Radek Stepan
  * @package   Fari Framework\Db
  */

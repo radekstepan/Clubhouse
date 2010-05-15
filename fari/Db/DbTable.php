@@ -45,8 +45,11 @@ class Table {
     /** @var string join table string */
     private $join;
 
-    /** @Fari_DbSubject observer subject for logging */
+    /** @Fari_DbLogger observer subject for logging */
     private $logger;
+
+    /** @Fari_DbValidator observer subject for query validation */
+    private $validator;
 
     /**
 	 * Setup a database connection (to a table)
@@ -59,6 +62,8 @@ class Table {
         // table name exists?
         if (isset($table)) {
             $this->table = $table;
+        } else if (isset($this->table)) {
+            assert('!empty($this->table); // table name needs to be provided');
         } else {
             // are we using high enough version of PHP for late static binding?
             try { if (version_compare(phpversion(), '5.3.0', '<=') == TRUE) {
@@ -69,9 +74,20 @@ class Table {
             $this->table = get_called_class();
         }
 
-        // attach an observer
-        $this->logger = new Fari_DbSubject();
+        // attach observers
+        $this->logger = new Fari_DbLogger();
         $this->logger->attach(new Fari_ApplicationLogger());
+
+        // attach validator
+        $this->validator = $this->attachValidator();
+    }
+
+    /**
+     * Returns a validator object, return NULL to switch it off.
+     * @return Fari_DbTableValidator
+     */
+    private function attachValidator() {
+        return new Fari_DbTableValidator();
     }
 
     /**
@@ -618,13 +634,20 @@ class Table {
     }
 
     /**
-     * Bind data to a statement.
+     * Bind data to a statement and optionally run a validation.
      * @param <type> $statement
      * @return <type>
      */
     private function bindData($statement) {
         foreach ($this->data as $column => $value) {
             $statement->bindValue(":{$column}", $value, $this->valueType($value));
+        }
+
+        // is validator set?
+        // TODO: instanceof might change in the future!!
+        if ($this->validator instanceof Fari_DbTableValidator) {
+            // run validation on us
+            $this->validator->validate($this);
         }
         
         return $statement;
@@ -715,7 +738,7 @@ class Table {
      * Clear data.
      */
     private function clearData() {
-        $this->data = array();
+        //$this->data = array();
     }
 
     /**

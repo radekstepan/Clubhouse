@@ -14,6 +14,7 @@
 /**
  * DB connection functions.
  *
+ * @deprecated
  * @copyright Copyright (c) 2008, 2010 Radek Stepan
  * @package   Fari Framework\Db
  */
