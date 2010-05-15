@@ -99,8 +99,11 @@ class Fari_DbTableValidator {
             if (!array_key_exists($column, $table->data)) {
                 throw new Fari_DbTableValidatorException("'$column' column does not exist");
             } else {
+                // need to construct a new Table not to overwrite anything in the object we are validating
+                $test = new Table($table->table);
                 // query for first occurence of the same column value
-                $result = $table->findFirst()->where(array($column => $table->data[$column]));
+                $result = $test->findFirst()->where(array($column => $table->data[$column]));
+                unset($test);
                 if (!empty($result)) {
                     throw new Fari_DbTableValidatorException("'$column' value is not unique");
                 }

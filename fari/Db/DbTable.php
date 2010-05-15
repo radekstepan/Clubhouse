@@ -738,7 +738,7 @@ class Table {
      * Clear data.
      */
     private function clearData() {
-        //$this->data = array();
+        $this->data = array();
     }
 
     /**
