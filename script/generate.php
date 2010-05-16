@@ -89,6 +89,10 @@ if (!defined('BACKSTAGE')) {
  * @param string $name e.g.: "hello"
  */
 function newPresenter($name) {
+
+// lowercase
+$lowercase = strtolower($name);
+
 $presenterCode = <<<CODE
 <?php if (!defined('FARI')) die();
 
@@ -115,7 +119,7 @@ class {$name}Presenter extends Fari_ApplicationPresenter {
 }
 CODE;
 
-$viewCode = <<<CODE
+$layoutCode = <<<CODE
 <?php if (!defined('FARI')) die(); ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -127,9 +131,13 @@ $viewCode = <<<CODE
     <link rel="stylesheet" type="text/css" media="screen" href="<?php url('/public/css/style.css'); ?>" />
 </head>
 <body>
-    <pre>This is a default view template</pre>
+    <?php echo \$template; ?>
 </body>
 </html>
+CODE;
+
+$viewCode = <<<CODE
+<pre>This is a default view template in 'application/views/{$lowercase}.phtml'</pre>
 CODE;
 
     $presenterPath = 'application/presenters';
@@ -152,11 +160,14 @@ CODE;
         // check/create views directory
         createDirectory($viewsPath . '/');
 
+        // presenter layout
+        createFile("{$viewsPath}/@{$lowercase}.phtml", $layoutCode);
+
         // create appropriate presenter-named views dir
         createDirectory("{$viewsPath}/{$name}/");
 
         // default index file
-        createFile("{$viewsPath}/{$name}/index.tpl.php", $viewCode);
+        createFile("{$viewsPath}/{$name}/index.phtml", $viewCode);
     }
 }
 
