@@ -24,6 +24,10 @@ class Fari_ApplicationViewCache {
     const CACHE_EXT = '.html';
     /**#@-*/
 
+    /**#@+ view file suffix */
+	const VIEW_SUFFIX = '.phtml';
+    /**#@-*/
+
     /** @var cache expiry in minutes */
 	private $expiry = 5;
 
@@ -74,24 +78,34 @@ class Fari_ApplicationViewCache {
         // import key:value array into symbol table
         extract($values, EXTR_SKIP);
 
-        // start the output buffer, compress if possible
-        ob_start();
-
-        // create template file path
-        $viewFile = BASEPATH . '/' . APP_DIR . '/views/' . $this->viewName . '.tpl' . EXT;
+        // form views path
+        $path = BASEPATH . '/' . APP_DIR . '/views/';
+        $viewFile = $path . $this->viewName . self::VIEW_SUFFIX;
         // check if view exists
         $this->isViewValid($viewFile);
-        // all went fine, include
-        include $viewFile;
 
-        // get view/template contents to a variable
-        $contentOutput = ob_get_contents();
+        // are we using a @layout file?
+        $temp = explode('/', $viewName);
+        assert('count($temp) == 2; // $viewName needs to consist of "presenter/file"');
+        // custom layout named after our presenter
+        if (file_exists($layout = $path . '@' . $temp[0] . self::VIEW_SUFFIX)) {
+            $cacheFile = $this->returnLayoutAndView($layout, $viewFile);
+        // application level layout
+        } else if (file_exists($layout = $path . '@application' . self::VIEW_SUFFIX)) {
+            $cacheFile = $this->returnLayoutAndView($layout, $viewFile);
+        } else {
+            // no layout...
+            ob_start();
+            include $viewFile;
+            $cacheFile = ob_get_contents();
+            ob_end_clean();
+        }
 
         // write into cache file
         $this->writeCache($contentOutput, $cacheFile);
 
         // send the output to the browser
-        ob_end_flush();
+        echo $cacheFile;
 	}
 
 	/**
@@ -158,5 +172,27 @@ class Fari_ApplicationViewCache {
 		// return TRUE if file age 'within' good time
 		return ($goodTime < $cacheAge) ? FALSE : TRUE;
 	}
-	
+
+    /**
+     * Return layout file and view file included in $template var.
+     * @param string $layout file path
+     * @param string $view file path
+     * @return string cached file
+     */
+    private function returnLayoutAndView($layout, $view) {
+        ob_start();
+        // save view into template var
+        include $view;
+        $template = ob_get_contents();
+        ob_end_clean();
+
+        ob_start();
+        // call parent layout
+        include $layout;
+        $cacheFile = ob_get_contents();
+        ob_end_clean();
+
+        return $cacheFile;
+    }
+
 }

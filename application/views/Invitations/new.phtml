@@ -1,9 +1,8 @@
-<?php if (!defined('FARI')) die(); include('application/views/head.tpl.php'); ?>
-
+<?php if (!defined('FARI')) die(); ?>
 <body>
     <!-- header -->
     <div id="products"><a class="active" href="#">Clubhouse</a></div>
-    
+
     <!-- menu -->
     <div id="menu">
         <ul>
@@ -12,7 +11,7 @@
                 <li><a href="<?php url('/room/' . $roomId . '/'); ?>"><?php echo $roomName; ?></a></li>
             <?php endforeach; ?>
             <li class="indent"><a href="<?php url('/transcripts/'); ?>">Files, Transcripts &amp; Search</a></li>
-            
+
             <li class="right nobg"><a href="<?php url('/logout/'); ?>">Sign out</a></li>
             <li class="right"><a href="<?php url('/settings/'); ?>">Settings</a></li>
             <li class="active right"><a href="<?php url('/users/'); ?>">Users</a></li>
@@ -59,12 +58,10 @@
                 <span>or</span> <a class="cancel" href="<?php url('/users/'); ?>">Cancel</a>
             </form>
         </div>
-        
+
         <div class="bottom">&nbsp;</div>
     </div>
 
     <!-- right column -->
     <div id="right"></div>
-
 </body>
-</html>

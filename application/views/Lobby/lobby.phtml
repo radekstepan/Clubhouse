@@ -1,5 +1,4 @@
-<?php if (!defined('FARI')) die(); include('application/views/scriptaculous.tpl.php'); ?>
-
+<?php if (!defined('FARI')) die(); ?>
 <body onload="
     spinner(true);
     getRooms('<?php url('/lobby/rooms/'); ?>');
@@ -8,7 +7,7 @@
 ">
     <!-- header -->
     <div id="products"><a class="active" href="#">Clubhouse</a></div>
-    
+
     <!-- menu -->
     <div id="menu">
         <ul>
@@ -17,7 +16,7 @@
                 <li><a href="<?php url('/room/' . $roomId . '/'); ?>"><?php echo $roomName; ?></a></li>
             <?php endforeach; ?>
             <li class="indent"><a href="<?php url('/transcripts/'); ?>">Files, Transcripts &amp; Search</a></li>
-            
+
             <li class="right nobg"><a href="<?php url('/logout/'); ?>">Sign out</a></li>
             <?php if ($isAdmin): ?>
                 <li class="right"><a href="<?php url('/settings/'); ?>">Settings</a></li>
@@ -72,9 +71,7 @@
             <table id="lobby"><tr><td></td><td></td><td></td></tr></table>
             <div style="clear:both; padding-top:45px;"></div>
         </div>
-        
+
         <div class="bottom">&nbsp;</div>
     </div>
-
 </body>
-</html>

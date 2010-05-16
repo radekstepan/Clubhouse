@@ -19,6 +19,10 @@
  */
 class Fari_ApplicationView {
 
+    /**#@+ filename suffix */
+	const VIEW_SUFFIX = '.phtml';
+    /**#@-*/
+
     /** @var values from Fari_Bag to extract */
     private $values = NULL;
 
@@ -41,19 +45,34 @@ class Fari_ApplicationView {
 
         // import key:value array into symbol table
         extract($this->values, EXTR_SKIP);
-        
+
+        // form views path
+        $path = BASEPATH . '/' . APP_DIR . '/views/';
         // create template file path
-        $viewFile = BASEPATH . '/' . APP_DIR . '/views/' . $viewName . '.tpl' . EXT;
+        $viewFile = $path . $viewName . self::VIEW_SUFFIX;
         
         // check if view exists
         $this->isViewValid($viewFile);
-        // all went fine, include
-        include $viewFile;
+
+        // are we using a @layout file?
+        $temp = explode('/', $viewName);
+        assert('count($temp) == 2; // $viewName needs to consist of "presenter/file"');
+        // custom layout named after our presenter
+        if (file_exists($layout = $path . '@' . $temp[0] . self::VIEW_SUFFIX)) {
+            $this->includeLayoutAndView($layout, $viewFile);
+        // application level layout
+        } else if (file_exists($layout = $path . '@application' . self::VIEW_SUFFIX)) {
+            $this->includeLayoutAndView($layout, $viewFile);
+        } else {
+            // no soup for you!
+            include $viewFile;
+        }
 	}
 	
 	/**
 	 * Check if view file can be included. Will throw Fari_Exception on error.
 	 * @param string $viewFile to check for existence
+     * @throws Fari_Exception
 	 * @return void
 	 */
 	private function isViewValid($viewFile) {
@@ -64,5 +83,20 @@ class Fari_ApplicationView {
 			}
 		} catch (Fari_Exception $exception) { $exception->fire(); }
 	}
+
+    /**
+     * Include layout file and view file included in $template var.
+     * @param string $layout file path
+     * @param string $view file path
+     */
+    private function includeLayoutAndView($layout, $view) {
+        ob_start();
+        // save view into template var
+        include $view;
+        $template = ob_get_contents();
+        ob_end_clean();
+        // call parent layout
+        include $layout;
+    }
 	
 }
