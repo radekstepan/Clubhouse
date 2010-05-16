@@ -78,7 +78,7 @@ class Fari_AuthenticatorSimple extends Fari_AuthenticatorTemplate {
      * @return boolean TRUE if we have a match
      */
     public function matchUser() {
-		// db row select on 'users' table
+        // db row select on 'users' table
         $result = $this->table->findFirst()->where(
             array('username' => $this->username, 'password' => $this->password)
         );

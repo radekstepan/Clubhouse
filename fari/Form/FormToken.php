@@ -29,13 +29,13 @@ class Fari_FormToken {
 	 * @return string token
 	 */
 	public static function create($name='Default') {
-		// create a token
-		if (!isset($_SESSION[self::SESSION_STORAGE . $name])) {
+        // create a token
+		if (!isset($_SESSION[self::SESSION_STORAGE . APP_SALT . $name])) {
 			// store it in a session
-			$_SESSION[self::SESSION_STORAGE . $name] = Fari_Tools::randomCode();
+			$_SESSION[self::SESSION_STORAGE . APP_SALT . $name] = Fari_Tools::randomCode();
 		}
 		// return it so that we can store it in a hidden form param
-		return $_SESSION[self::SESSION_STORAGE . $name];
+		return $_SESSION[self::SESSION_STORAGE . APP_SALT . $name];
 	}
 	
 	/**
@@ -49,7 +49,7 @@ class Fari_FormToken {
 		$unsafeAnswer = Fari_Escape::text($unsafeAnswer);
 		
 		// check if token is valid
-		return ($unsafeAnswer == $_SESSION[self::SESSION_STORAGE . $name]) ? TRUE : FALSE;
+		return ($unsafeAnswer == $_SESSION[self::SESSION_STORAGE . APP_SALT . $name]) ? TRUE : FALSE;
 	}
 	
 }

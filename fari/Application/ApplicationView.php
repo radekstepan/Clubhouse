@@ -43,9 +43,6 @@ class Fari_ApplicationView {
  	public function render($viewName) {
         assert('strlen($viewName) > 0; // view name cannot be empty');
 
-        // import key:value array into symbol table
-        extract($this->values, EXTR_SKIP);
-
         // form views path
         $path = BASEPATH . '/' . APP_DIR . '/views/';
         // create template file path
@@ -64,6 +61,9 @@ class Fari_ApplicationView {
         } else if (file_exists($layout = $path . '@application' . self::VIEW_SUFFIX)) {
             $this->includeLayoutAndView($layout, $viewFile);
         } else {
+            // import key:value array into symbol table
+            extract($this->values, EXTR_SKIP);
+            
             // no soup for you!
             include $viewFile;
         }
@@ -90,6 +90,13 @@ class Fari_ApplicationView {
      * @param string $view file path
      */
     private function includeLayoutAndView($layout, $view) {
+        // we are defining our own var $template so check if exists
+        assert('!array_key_exists(\'template\', $this->values);
+            // $template variable will be overwritten, do not use it');
+
+        // import key:value array into symbol table
+        extract($this->values, EXTR_SKIP);
+
         ob_start();
         // save view into template var
         include $view;

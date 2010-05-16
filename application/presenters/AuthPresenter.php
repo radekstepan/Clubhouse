@@ -52,7 +52,7 @@ class AuthPresenter extends Fari_ApplicationPresenter {
         }
 
         $this->bag->messages = Fari_Message::get();
-
+        
 		// create token & display login form
 		$this->bag->token = Fari_FormToken::create();
 		$this->render();
