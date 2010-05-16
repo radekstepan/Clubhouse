@@ -13,7 +13,7 @@
 
 /**
  * An Object Relational Mapper (ORM) working on a PDO data source.
- * @example $table->findFirst->where(array('id' => '> 1'));
+ * @example $table->findFirst()->where(array('id' => '> 1'));
  *
  * @copyright Copyright (c) 2008, 2010 Radek Stepan
  * @package   Fari Framework\Db
@@ -24,7 +24,7 @@ class Table {
     private $db;
 
     /** @var string table name */
-    public $table;
+    public $tableName;
 
     /** @var string primary key to use when determining if row column value is unique etc */
     public $primaryKey = 'id';
@@ -33,10 +33,10 @@ class Table {
     public $data;
 
     /** @var limit the fields we return in find* statements */
-    private $select;
+    public $select;
 
     /** @var array of data in the where clause */
-    private $where;
+    public $where;
 
     /** @var string private name of method to call from a where clause */
     private $method;
@@ -58,15 +58,15 @@ class Table {
 	 * Setup a database connection (to a table)
 	 * @param string an optional table name, optional only in PHP <= 5.3.0
 	 */
-    public function __construct($table=NULL) {
+    public function __construct($tableName=NULL) {
         // db connection
         $this->db = Fari_DbPdo::getConnection();
 
         // table name exists?
-        if (isset($table)) {
-            $this->table = $table;
-        } else if (isset($this->table)) {
-            assert('!empty($this->table); // table name needs to be provided');
+        if (isset($tableName)) {
+            $this->tableName = $tableName;
+        } else if (isset($this->tableName)) {
+            assert('!empty($this->tableName); // table name needs to be provided');
         } else {
             // are we using high enough version of PHP for late static binding?
             try { if (version_compare(phpversion(), '5.3.0', '<=') == TRUE) {
@@ -74,7 +74,7 @@ class Table {
             } catch (Fari_Exception $exception) { $exception->fire(); }
 
             // ... yes, get the name of the class as the name of the table
-            $this->table = get_called_class();
+            $this->tableName = get_called_class();
         }
 
         // attach observers
@@ -83,11 +83,6 @@ class Table {
 
         // attach validator
         $this->validator = $this->attachValidator();
-
-        // while we are at it, form relationships with other tables
-        $relationships = new Fari_DbTableRelationships();
-        // relate this shi...
-        $relationships->relate(&$this);
     }
 
     /**
@@ -183,7 +178,7 @@ class Table {
                     // do we have a join?
                     if (!empty($this->join)) {
                         // prepend our table name then...
-                        $this->where = array("{$this->table}.{$this->primaryKey}" => $where);
+                        $this->where = array("{$this->tableName}.{$this->primaryKey}" => $where);
                     } else {
                         $this->where = array($this->primaryKey => $where);
                     }
@@ -196,6 +191,10 @@ class Table {
             throw new Fari_Exception('First specify the method you would like to execute, then the where clause.'); }
         } catch (Fari_Exception $exception) { $exception->fire(); }
 
+        // any relationships?
+        $has = new Fari_DbTableRelationships();
+        $has->iCanHazQuery(&$this);
+
         // method call
         $result = $this->{$this->method}();
         // if we are finding first result...
@@ -206,6 +205,8 @@ class Table {
         //    $bag = new Fari_Bag();
         //    $bag->set($result);
         //}
+        //
+
         // return the result from a method call
         return $result;
     }
@@ -233,72 +234,73 @@ class Table {
 
 
 
+    /********************* limit & order *********************/
+
+
+
+    /**
+     * ORDER BY clause,
+     * @param string $order
+     * @return Table, need to define a where clause
+     */
+    public function orderBy($order) {
+        $this->order = $this->checkOrder($order);
+        return $this;
+    }
+
+    /**
+     * LIMIT clause,
+     * @param string $limit
+     * @return Table, need to define a where clause
+     */
+    public function limit($limit) {
+        if (!empty($limit)) {
+            assert("is_int(\$limit); // limit needs to be an integer");
+            $this->limit = $limit;
+        }
+        return $this;
+    }
+
+
+
     /********************* find queries *********************/
 
 
 
     /**
      * Find item(s) in a table.
-     * @param string $order
-     * @param integer $limit
      * @return Table, need to define a where clause
      */
-    public function find($order=NULL, $limit=NULL) {
-        $this->order = $this->checkOrder($order);
-
-        if (isset($limit)) {
-            assert("is_int(\$limit); // limit needs to be an integer");
-            $this->limit = $limit;
-        }
-
+    public function find() {
         $this->method = '_find';
-
         return $this;
     }
 
     /**
      * Find first occurence of an item in a table.
-     * @param string $order
      * @return Table, need to define a where clause
      */
-    public function findFirst($order=NULL) {
-        $this->order = $this->checkOrder($order);
-
+    public function findFirst() {
         $this->limit = 1;
         $this->method = '_find';
-
         return $this;
     }
 
     /**
      * Find last occurence of an item in a table.
-     * @param string $order
      * @return Table, need to define a where clause
      */
-    public function findLast($order=NULL) {
-        $this->order = $this->checkOrder($order);
-
+    public function findLast() {
         $this->limit = 1;
         $this->method = '_find';
-
         return $this;
     }
 
     /**
      * Return all items in a table.
-     * @param string $order
-     * @param integer $limit
      * @return array result set
      */
-    public function findAll($order=NULL, $limit=NULL) {
-        $this->order = $this->checkOrder($order);
-        
-        if (isset($order)) {
-            assert("is_int(\$limit); // limit needs to be an integer");
-            $this->limit = $limit;
-        }
-
-        $this->limit = $limit;
+    public function findAll() {
         return $this->_find();
     }
 
@@ -399,7 +401,7 @@ class Table {
         if (isset($values)) $this->set($values);
 
         // SQL query, bind data
-        $sql = "INSERT INTO {$this->table} ({$this->getColumns()}) VALUES ({$this->prepareData()})";
+        $sql = "INSERT INTO {$this->tableName} ({$this->getColumns()}) VALUES ({$this->prepareData()})";
 
         // prepare SQL
         $statement = $this->db->prepare($sql);
@@ -567,7 +569,7 @@ class Table {
         // joining columns have different names
         if (is_array($on)) {
             foreach ($on as $left => $right) {
-                $leftTable = $this->table;
+                $leftTable = $this->tableName;
                 $rightTable = $table;
 
                 // are we passing a table name?
@@ -597,7 +599,7 @@ class Table {
             // filter out extra spaces
             $on = preg_replace('/\s\s+]/', '', $on);
 
-            $this->join .= " JOIN {$table} ON {$this->table}.{$on}={$table}.{$on}";
+            $this->join .= " JOIN {$table} ON {$this->tableName}.{$on}={$table}.{$on}";
         }
 
         return $this;
@@ -622,9 +624,9 @@ class Table {
      */
     private function getTableQuery() {
         if (isset($this->join)) {
-            return $this->table . $this->join;
+            return $this->tableName . $this->join;
         } else {
-            return $this->table;
+            return $this->tableName;
         }
     }
 
@@ -807,7 +809,7 @@ class Table {
             // do we have a join?
             if (isset($this->join) && !empty($this->join)) {
                 // prepend a table name
-                $order = "{$this->table}.{$this->primaryKey} ASC";
+                $order = "{$this->tableName}.{$this->primaryKey} ASC";
             } else {
                 $order = "{$this->primaryKey} ASC";
             }

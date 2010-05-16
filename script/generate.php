@@ -1,4 +1,3 @@
-#!/usr/bin/env php
 <?php
 
 /**
@@ -28,50 +27,55 @@ if (PHP_SAPI !== 'cli') die();
 $type = @$argv[1];
 // name of component to create, filtered for alphanumeric
 $name = ucfirst(preg_replace("/[^a-zA-Z0-9\s]/", "", @$argv[2]));
+// optional parameter
+$parameter = ucfirst(preg_replace("/[^a-zA-Z0-9\s]/", "", @$argv[3]));
 
 // base path to application
-if (!defined('BASEPATH')) define('BASEPATH', dirname(__FILE__));
+if (!defined('BASEPATH')) define('BASEPATH', dirname(__FILE__) . '/..');
+
+include_once('helpers.php');
 
 // determine type of the generator to use
-switch ($type) {
-    case "presenter":
-        if (empty($name)) {
-            // undefined presenter name
-            message("Usage: php script/generate.php presenter presenterName", 'red');
-        } else {
-            newPresenter($name);
-        }
-        break;
-    case "model":
-        if (empty($name)) {
-            // undefined model name
-            message("Usage: php script/generate.php model modelName", 'red');
-        } else {
-            newModel($name);
-        }
-        break;
-    case "auth":
-    case "authentication":
-    case "security":
-    case "login":
-    case "users":
-    case "acl":
-    case "admin":
-        if (empty($name)) {
-            // undefined auth name
-            message("Usage: php script/generate.php authentication presenterName", 'red');
-        } else {
-            newAuth($name);
-        }
-        break;
-    case '-help':
-    case 'help':
-    case '':
-        message("Usage: php script/generate.php [presenter|model|authentication] fileName", 'green');
-        break;
-    default:
-        // fail, undetermined generator type called
-        message("Couldn't find '{$type}' generator try 'help'", 'red');
+if (!defined('BACKSTAGE')) {
+    switch ($type) {
+        case "presenter":
+            if (empty($name)) {
+                // undefined presenter name
+                message("Usage: php script/generate.php presenter presenterName", 'red');
+            } else {
+                newPresenter($name);
+            }
+            break;
+        case "model":
+            if (empty($name)) {
+                // undefined model name
+                message("Usage: php script/generate.php model modelName [primaryKey]", 'red');
+            } else {
+                newModel($name, $parameter);
+            }
+            break;
+        case "auth":
+        case "authentication":
+        case "security":
+        case "login":
+        case "users":
+        case "acl":
+        case "admin":
+            if (empty($name)) {
+                // undefined auth name
+                message("Usage: php script/generate.php authentication presenterName", 'red');
+            } else {
+                newAuth($name);
+            }
+            break;
+        case 'help':
+        case '':
+            message("Usage: php script/generate.php [presenter|model|authentication] fileName parameter", 'green');
+            break;
+        default:
+            // fail, undetermined generator type called
+            message("Couldn't find '{$type}' generator try 'help'", 'red');
+    }
 }
 
 
@@ -132,7 +136,7 @@ CODE;
     $viewsPath = 'application/views';
 
     // is dir writable?
-    if (!is_writable(BASEPATH . "/../{$presenterPath}")) {
+    if (!is_writable(BASEPATH . "/{$presenterPath}")) {
         echo message("Cannot write into {$presenterPath} directory!", 'red');
     } else {
         // check path to presenters exists, dir-wise
@@ -165,14 +169,16 @@ CODE;
 /**
  * Create a new model based on Table class.
  * @param string $name e.g.: "hello"
+ * @param string $primaryKey e.g.: "id"
  */
-function newModel($name) {
+function newModel($name, $primaryKey) {
 
 // determine the prefix of our model
 $prefix = current(preg_split('/(?<=\\w)(?=[A-Z])/', $name));
 
 // lowercase
 $lowercase = strtolower($name);
+$primaryKey = (empty($primaryKey)) ? 'id' : strtolower($primaryKey);
 
 $modelCode = <<<CODE
 <?php
@@ -185,29 +191,32 @@ $modelCode = <<<CODE
 class {$name} extends Table {
 
     /** @var string table name */
-    public \$table = '{$lowercase}';
+    public \$tableName = '{$lowercase}';
+
+    /** @var string primary key */
+    public \$primaryKey = '{$primaryKey}';
 
     /********************* relationships *********************/
 
-    /** @var string a "one-to-one association" with another table(s) through primary keys */
-    public \$hasOne;
+    /** @var array a "one-to-one association" with another table(s) through primary keys */
+    //public \$hasOne;
 
-    /** @var string a "one-to-many association" with another table, e.g. a blog post has many comments */
-    public \$hasMany;
+    /** @var array a "one-to-many association" with another table(s), e.g. a blog post has many comments */
+    //public \$hasMany;
 
     /********************* validation *********************/
 
     /** @var array validates the presence of column data */
-    public \$validatesPresenceOf = array('id');
+    //public \$validatesPresenceOf = array('id');
 
     /** @var array validates the length of columns */
-    public \$validatesLengthOf = array(array('password' => 5));
+    //public \$validatesLengthOf = array(array('password' => 5));
 
     /** @var array validates uniqueness of columns */
-    public \$validatesUniquenessOf = array('username');
+    //public \$validatesUniquenessOf = array('username');
 
     /** @var array validates regex format of a column */
-    public \$validatesFormatOf = array(array('zip' => '/^([0-9]{5})(-[0-9]{4})?$/i'));
+    //public \$validatesFormatOf = array(array('zip' => '/^([0-9]{5})(-[0-9]{4})?$/i'));
 
 }
 CODE;
@@ -215,7 +224,7 @@ CODE;
     $modelsPath = 'application/models';
 
     // is dir writable?
-    if (!is_writable(BASEPATH . "/../{$modelsPath}")) {
+    if (!is_writable(BASEPATH . "/{$modelsPath}")) {
         echo message("Cannot write into {$modelsPath} directory!", 'red');
     } else {
         // check path to models exists, dir-wise
@@ -337,7 +346,7 @@ class {$name}Auth {
      * @return TestUser on success or TestUserNotAuthenticatedException thrown
      */
     function __construct(\$username, \$password, \$token=NULL) {
-        \$authenticator = new Fari_AuthenticatorSimple();
+        \$authenticator = new Fari_AuthenticatorSimple('{$lowercase}');
         // authenticator authenticates...
         if (\$authenticator->authenticate(\$username, \$password, \$token) != TRUE) {
             throw new {$prefix}UserNotAuthenticatedException();
@@ -362,7 +371,7 @@ $userModelCode = <<<CODE
 class {$prefix}User extends Fari_AuthenticatorSimple {
 
         public function __construct() {
-            parent::__construct();
+            parent::__construct('{$lowercase}');
 
             // no entry, we are not logged in, fail the constructor
             if (!\$this->isAuthenticated()) throw new {$prefix}UserNotAuthenticatedException();
@@ -421,7 +430,7 @@ CODE;
     $viewsPath = 'application/views';
 
     // is dir writable?
-    if (!is_writable(BASEPATH . "/../{$presenterPath}")) {
+    if (!is_writable(BASEPATH . "/{$presenterPath}")) {
         echo message("Cannot write into {$presenterPath} directory!", 'red');
     } else {
         // check path to presenters exists, dir-wise
@@ -465,11 +474,11 @@ CODE;
  */
 function createDirectory($path) {    
     // does the dir exist? I can haz file? Dir! File? Cheese!
-    if (file_exists(BASEPATH . "/../{$path}")) {
+    if (file_exists(BASEPATH . "/{$path}")) {
         message("      exists  {$path}", 'gray');
     } else {
         // aka STFU, should have been caught above
-        @mkdir(BASEPATH . "/../{$path}");
+        @mkdir(BASEPATH . "/{$path}");
         message("      create  {$path}");
     }
 }
@@ -480,53 +489,12 @@ function createDirectory($path) {
  * @param string $content to save
  */
 function createFile($path, $content) {
-    if (file_exists(BASEPATH . "/../{$path}")) {
+    if (file_exists(BASEPATH . "/{$path}")) {
         message("      exists  {$path}", 'gray');
     } else {
-        $file = fopen(BASEPATH . "/../{$path}", 'w');
+        $file = fopen(BASEPATH . "/{$path}", 'w');
         fwrite($file, $content);
         fclose($file);
         message("      create  {$path}");
-    }
-}
-
-
-
-/********************* helpers *********************/
-
-
-
-/**
- * Display a message in the terminal.
- * @param string $string to display
- * @param string $color to use
- */
-function message($string, $color='black') {
-    // color switcher
-    switch ($color) {
-        case "magenta":
-            echo "[1;36;1m{$string}[0m\n";
-            break;
-        case "violet":
-            echo "[1;35;1m{$string}[0m\n";
-            break;
-        case "blue":
-            echo "[1;34;1m{$string}[0m\n";
-            break;
-        case "yellow":
-            echo "[1;33;1m{$string}[0m\n";
-            break;
-        case "green":
-            echo "[1;32;1m{$string}[0m\n";
-            break;
-        case "red":
-            echo "[1;31;1m{$string}[0m\n";
-            break;
-        case "gray":
-            echo "[1;30;1m{$string}[0m\n";
-            break;
-        case "black":
-        default:
-            echo "[1;29;1m{$string}[0m\n";
     }
 }

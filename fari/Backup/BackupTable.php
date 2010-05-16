@@ -19,24 +19,14 @@
  */
 class Fari_BackupTable extends Fari_BackupTemplate {
 
-    /** @var string password */
-    private $db;
-
-    /**
-     * Setup database connection.
-     * @param optional db connection, otherwise defaults to Fari_Db
-     */
-    public function __construct($db=NULL) {
-        $this->db = (!isset($db)) ? Fari_Db::getConnection() : $db;
-    }
-
     /**
      * Returns an array of all items in a table.
-     * @param name of the table
+     * @param string $tableName name of the table
      * @return array
      */
-    public function items($tableName) {
-        return $this->db->select($tableName, '*');
+    final function items($tableName) {
+        $table = new Table($tableName);
+        return $table->findAll();
     }
     
 }

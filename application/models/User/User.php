@@ -31,7 +31,7 @@ class User extends Fari_AuthenticatorSimple {
      */
     function __construct($roles=NULL) {
         $this->db = Fari_Db::getConnection();
-        parent::__construct($this->db);
+        parent::__construct();
 
         // no entry, we are not logged in, fail the constructor
         if (!$this->isAuthenticated()) throw new UserNotAuthenticatedException();

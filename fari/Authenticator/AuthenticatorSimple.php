@@ -25,15 +25,15 @@ class Fari_AuthenticatorSimple extends Fari_AuthenticatorTemplate {
     /** @var holds credentials string */
     private $credentialsString;
 
-    /** @var Fari_Db */
-    private $db;
+    /** @var Table */
+    private $table;
 
     /**
      * Setup database connection.
-     * @param optional db connection, otherwise defaults to Fari_Db
+     * @param string $tableName
      */
-   	public function __construct($db=NULL) {
-        $this->db = (!isset($db)) ? Fari_Db::getConnection() : $db;
+   	public function __construct($tableName='users') {
+        $this->table = new Table($tableName);
     }
 
 
@@ -79,9 +79,7 @@ class Fari_AuthenticatorSimple extends Fari_AuthenticatorTemplate {
      */
     public function matchUser() {
 		// db row select on 'users' table
-        $result = $this->db->selectRow(
-            'users',
-            $this->credentialsColumn,
+        $result = $this->table->findFirst()->where(
             array('username' => $this->username, 'password' => $this->password)
         );
 
@@ -96,7 +94,9 @@ class Fari_AuthenticatorSimple extends Fari_AuthenticatorTemplate {
      * @param string
      */
     public function matchSessionCredentials($credentialsString) {
-        $result = $this->db->selectRow('users', '*', array($this->credentialsColumn => $credentialsString));
+        $result = $this->table->findFirst()->where(
+            array($this->credentialsColumn => $credentialsString)
+        );
 
 		return (isset($result[$this->credentialsColumn]));
     }

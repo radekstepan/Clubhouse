@@ -26,7 +26,7 @@ class Fari_Escape {
 	 * @return string
 	 */
 	public static function html($input) {
-        // escape array
+        // TODO: escape array
         if (is_array($input)) {
             foreach ($input as &$value) $value = htmlspecialchars($value, ENT_QUOTES);
         // escape string

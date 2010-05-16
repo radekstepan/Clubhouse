@@ -98,21 +98,8 @@ class Fari_ApplicationDiagnostics {
 	 * Dumps variables into the view.
 	 */
     public static function dump($mixed, $title='Variable Dump') {
-        ?>
-        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-        <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-        <head>
-            <title><?php echo $title; ?></title>
-            <?php self::css();  ?>
-        </head>
-
-        <body>
-            <div id="title"><b><?php echo FARI; ?></b> running <b><?php echo APP_VERSION; ?></b></div>
-            <div id="message"><h1><?php echo $title; ?></h1></div>
-            <div id="box"><pre><?php echo self::formatVars($mixed); ?></pre></div>
-            </body>
-            </html>
-        <?php
+        echo '<pre style=\'font-size:12px;font-family:"Trebuchet MS", sans-serif;color:#333;\'>'
+            . self::formatVars($mixed) . '</pre>';
         die();
     }
 
@@ -123,12 +110,56 @@ class Fari_ApplicationDiagnostics {
      */
     public static function formatVars($mixed) {
         // we are working in HTML context
-        $mixed = Fari_Escape::html($mixed);
-        if ($mixed == NULL) $mixed = '<em>NULL</em>';
+        //$mixed = Fari_Escape::html($mixed);
+        if ($mixed === NULL) $mixed = '<em>NULL</em>';
         else if (empty($mixed)) $mixed = '<em>empty</em>';
-        else $mixed = print_r($mixed, TRUE);
+        else {
+            ob_start();
+            var_dump($mixed);
+            $mixed = ob_get_contents();
+            ob_clean();
+
+            $mixed = explode("\n", $mixed);
+            foreach ($mixed as &$line) {
+                // how big is the whitespace on the left?
+                $padding = strlen($line) - strlen(ltrim($line));
+                // add extra padding for better readability
+                for ($i=0;$i<$padding;$i++) $line = "  " . $line;
+                // if our line contains a value give it extra pad
+                if (strpos($trimmed = ltrim($line), "[") !== FALSE) {
+                    // highlight array key
+                    $line = str_replace("[", "<strong>[", $line);
+                    $line = str_replace("]", "]</strong>", $line);
+                } else {
+                    if (substr(trim($line), 0) != "}") $line = "   " . $line;
+                }
+                $line = substr($line, 3);
+            }
+            $mixed = implode("\n", $mixed);
+        }
 
         return $mixed;
+    }
+
+    /**
+     * Recursively parse an array
+     * @param <type> $varname
+     * @param <type> $varval
+     * @param <type> $depth
+     */
+    private static function recursiveDump($varname, $varval, $depth) {
+        // padding
+        for ($i=0; $i<$depth; $i++) echo "&nbsp;&nbsp;&nbsp;&nbsp;";
+        
+        if (!is_array($varval)) {
+            echo $varname . ' = ' . var_export($varval, true) . ";<br>\n";
+        } else {
+            echo $varname . " = array();<br>\n";
+            foreach ($varval as $key => $val) {
+                $depth++;
+                self::recursiveDump($varname . "[" . var_export($key, true) . "]", $val, $depth);
+            }
+        }
     }
 
 	/**
@@ -378,7 +409,7 @@ class Fari_ApplicationDiagnostics {
         color:#234A69;margin:10px 30px 0;padding:5px;}.code{background-color:#FFF9D8;border:1px solid #FECA51;
         margin:10px 30px;padding:5px;}i{color:#999;}.num{color:#9E9E7E;font-style:normal;font-weight:400;}
         a{color:#980905;}table{font:16px/1.5 "Trebuchet MS", "Geneva CE", lucida, sans-serif;font-size:100%;}
-        td{padding-right:20px;}#title b,span.err{color:#FFF;}
+        td{padding-right:20px;}#title b,span.err{color:#FFF;}#title.gray{border-bottom:#EEE;}
         </style>
      <?php }
 

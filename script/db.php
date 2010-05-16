@@ -1,4 +1,3 @@
-#!/usr/bin/env php
 <?php
 
 /**
@@ -30,21 +29,19 @@ $action = @$argv[1];
 $parameter = @$argv[2];
 
 // base path to application
-if (!defined('BASEPATH')) define('BASEPATH', dirname(__FILE__).'/..');
+if (!defined('BASEPATH')) define('BASEPATH', dirname(__FILE__) . '/..');
+
+include_once('helpers.php');
 
 // 'menu'
 switch ($action) {
-    case "schema":
-        if ($parameter !== 'load') {
-            message("Usage: php script/db.php schema [load]", 'red');
-        } else {
-            loadSchema();
-        }
+    case "build":
+        buildSchema();
         break;
     case '-help':
     case 'help':
     case '':
-        message("Usage: php script/db.php [schema] parameter", 'green');
+        message("Usage: php script/db.php [build]", 'green');
         break;
     default:
         // fail
@@ -53,14 +50,14 @@ switch ($action) {
 
 
 
-/********************* create new presenter *********************/
+/********************* build sql schema *********************/
 
 
 
 /**
- * Load schema from settings file.
+ * Build schema from settings file.
  */
-function loadSchema() {
+function buildSchema() {
     // does the settings file exist?
     if (!file_exists(BASEPATH . '/config/config.php')) {
         message("Couldn't find settings file config/config.php", 'red');
@@ -119,9 +116,50 @@ function loadSchema() {
                 // a query (maybe) :)
                 if (substr(trim($schema), 0, 1) !== '#') {
                     if ($pdoInstance->exec($schema) === FALSE) {
-                        message("Couldn't execute: '{$schema}'", 'red');
+                        // did we try to create a table?
+                        $schema = explode(' ', $schema);
+                        if ($schema[0] == 'CREATE' && $schema[1] == 'TABLE') {
+                            // check if table exists
+                            if ($pdoInstance->exec("SELECT * FROM {$schema[2]} LIMIT 1") !== FALSE) {
+                                $schema = implode(' ', $schema);
+                                message("      exists  '{$schema}'", 'gray');
+                                continue;
+                            }
+                        }
+                        message("      failed  '{$schema}'", 'red');
                     } else {
-                        message("Executed: '{$schema}'", 'green');
+                        message("      create  '{$schema}'", 'black');
+                        // were we trying to create table?
+                        $schema = explode(' ', $schema);
+                        if ($schema[0] == 'CREATE' && $schema[1] == 'TABLE') {
+                            $tableName = ucfirst(preg_replace("/[^a-zA-Z0-9\s]/", "", $schema[2]));
+
+                            // determine primary key in the table
+                            $schema = explode(',', implode(' ', $schema));
+                            foreach ($schema as $element) {
+                                // do we have primary key?
+                                if (strpos($element, 'PRIMARY KEY') !== FALSE) {
+                                    $element = substr($element, strpos($element, '(') + 1);
+                                    $fields = explode(', ', $element);
+                                    foreach ($fields as $field) {
+                                        // column field with PRIMARY KEY defined
+                                        if (strpos($field, 'PRIMARY KEY') !== FALSE) {
+                                            $primaryKey = preg_replace("/[^a-zA-Z0-9\s]/",
+                                                "",
+                                                current(explode(' ', $field)));
+                                            break;
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+
+                            if (!defined('BACKSTAGE')) define('BACKSTAGE', TRUE);
+                            include_once('generate.php');
+
+                            // create model
+                            newModel($tableName, $primaryKey);
+                        }
                     }
                 } else {
                     // a comment...
@@ -129,46 +167,5 @@ function loadSchema() {
                 }
             }
         }
-    }
-}
-
-
-
-/********************* helpers *********************/
-
-
-
-/**
- * Display a message in the terminal.
- * @param string $string to display
- * @param string $color to use
- */
-function message($string, $color='black') {
-    // color switcher
-    switch ($color) {
-        case "magenta":
-            echo "[1;36;1m{$string}[0m\n";
-            break;
-        case "violet":
-            echo "[1;35;1m{$string}[0m\n";
-            break;
-        case "blue":
-            echo "[1;34;1m{$string}[0m\n";
-            break;
-        case "yellow":
-            echo "[1;33;1m{$string}[0m\n";
-            break;
-        case "green":
-            echo "[1;32;1m{$string}[0m\n";
-            break;
-        case "red":
-            echo "[1;31;1m{$string}[0m\n";
-            break;
-        case "gray":
-            echo "[1;30;1m{$string}[0m\n";
-            break;
-        case "black":
-        default:
-            echo "[1;29;1m{$string}[0m\n";
     }
 }
