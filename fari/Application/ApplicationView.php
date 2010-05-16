@@ -55,7 +55,7 @@ class Fari_ApplicationView {
         $temp = explode('/', $viewName);
         assert('count($temp) == 2; // $viewName needs to consist of "presenter/file"');
         // custom layout named after our presenter
-        if (file_exists($layout = $path . '@' . $temp[0] . self::VIEW_SUFFIX)) {
+        if (file_exists($layout = $path . '@' . strtolower($temp[0]) . self::VIEW_SUFFIX)) {
             $this->includeLayoutAndView($layout, $viewFile);
         // application level layout
         } else if (file_exists($layout = $path . '@application' . self::VIEW_SUFFIX)) {

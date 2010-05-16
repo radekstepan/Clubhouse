@@ -75,9 +75,6 @@ class Fari_ApplicationViewCache {
         // everything went OK, 'build' cache filename path
         $cacheFile = BASEPATH . self::CACHE_DIR . $this->fileId . self::CACHE_EXT;
 
-        // import key:value array into symbol table
-        extract($values, EXTR_SKIP);
-
         // form views path
         $path = BASEPATH . '/' . APP_DIR . '/views/';
         $viewFile = $path . $this->viewName . self::VIEW_SUFFIX;
@@ -88,12 +85,15 @@ class Fari_ApplicationViewCache {
         $temp = explode('/', $viewName);
         assert('count($temp) == 2; // $viewName needs to consist of "presenter/file"');
         // custom layout named after our presenter
-        if (file_exists($layout = $path . '@' . $temp[0] . self::VIEW_SUFFIX)) {
+        if (file_exists($layout = $path . '@' . strtolower($temp[0]) . self::VIEW_SUFFIX)) {
             $cacheFile = $this->returnLayoutAndView($layout, $viewFile);
         // application level layout
         } else if (file_exists($layout = $path . '@application' . self::VIEW_SUFFIX)) {
             $cacheFile = $this->returnLayoutAndView($layout, $viewFile);
         } else {
+            // import key:value array into symbol table
+            extract($values, EXTR_SKIP);
+
             // no layout...
             ob_start();
             include $viewFile;
@@ -180,6 +180,9 @@ class Fari_ApplicationViewCache {
      * @return string cached file
      */
     private function returnLayoutAndView($layout, $view) {
+        // import key:value array into symbol table
+        extract($values, EXTR_SKIP);
+
         ob_start();
         // save view into template var
         include $view;
