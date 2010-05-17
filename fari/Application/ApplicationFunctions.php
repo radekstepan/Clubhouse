@@ -75,6 +75,7 @@ function dump($mixed, $title='Variables Dump') {
 
 /**
  * Echo URL to the (cached) View.
+ * @deprecated
  * @param string $link Controller/Action to call
  * @param boolean $echo echo output immediatelly?
  * @param boolean $domain prepend domain?

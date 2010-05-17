@@ -7,10 +7,10 @@
     <meta name="description" content="Clubhouse" />
     <title>Clubhouse Error</title>
 
-    <link rel="stylesheet" type="text/css" media="screen" href="<?php url('/public/css/reset.css'); ?>" />
-    <link rel="stylesheet" type="text/css" media="screen" href="<?php url('/public/css/codebase.css'); ?>" />
+    <?php stylesheetLinkTag('css/reset'); ?>
+    <?php stylesheetLinkTag('css/codebase'); ?>
 
-    <link rel="shortcut icon" type="image/x-icon" href="<?php url('/public/favicon.ico'); ?>" />
+    <?php faviconTag(); ?>
 </head>
 <?php echo $template; ?>
 </html>

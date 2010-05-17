@@ -67,6 +67,9 @@ class Fari_ApplicationViewCache {
      * @param array values to extract into the file
      */
  	public function saveCache(array $values) {
+        // include view helpers
+        include BASEPATH . "/fari/Application/ApplicationViewHelpers" . EXT;
+
         // we need to have the fileId and name set!
         try { if (!isset($this->fileId)) {
             throw new Fari_Exception('Fari requires you to call renderCache() from a Presenter first.'); }

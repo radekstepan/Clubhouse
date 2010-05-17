@@ -7,14 +7,14 @@
     <meta name="description" content="Clubhouse" />
     <title>Clubhouse<?php if (!empty($room['name'])) echo ": {$room['name']}"; ?></title>
 
-    <link rel="stylesheet" type="text/css" media="screen" href="<?php url('/public/css/reset.css'); ?>" />
-    <link rel="stylesheet" type="text/css" media="screen" href="<?php url('/public/css/codebase.css'); ?>" />
+    <?php stylesheetLinkTag('css/reset'); ?>
+    <?php stylesheetLinkTag('css/codebase'); ?>
 
-    <script src="<?php url('/public/javascript/prototype.js'); ?>" language="javascript" type="text/javascript"></script>
-    <script src="<?php url('/public/javascript/scriptaculous/scriptaculous.js'); ?>" language="javascript" type="text/javascript"></script>
-    <script src="<?php url('/public/javascript/clubhouse.js'); ?>" language="javascript" type="text/javascript"></script>
+    <?php javascriptIncludeTag('javascript/prototype'); ?>
+    <?php javascriptIncludeTag('javascript/scriptaculous/scriptaculous'); ?>
+    <?php javascriptIncludeTag('javascript/clubhouse'); ?>
 
-    <link rel="shortcut icon" type="image/x-icon" href="<?php url('/public/favicon.ico'); ?>" />
+    <?php faviconTag(); ?>
 </head>
 <?php echo $template; ?>
 </html>

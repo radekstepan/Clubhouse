@@ -17,7 +17,7 @@
  * @copyright Copyright (c) 2008, 2010 Radek Stepan
  * @package   Fari Framework\Application
  */
-class Fari_ApplicationView {
+final class Fari_ApplicationView {
 
     /**#@+ filename suffix */
 	const VIEW_SUFFIX = '.phtml';
@@ -32,6 +32,9 @@ class Fari_ApplicationView {
      */
     public function __construct(array $values) {
         $this->values = $values;
+
+        // and include view helpers
+        include BASEPATH . "/fari/Application/ApplicationViewHelpers" . EXT;
     }
 	
  	/**

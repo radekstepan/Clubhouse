@@ -128,7 +128,7 @@ $layoutCode = <<<CODE
     <meta http-equiv="Content-Language" content="en" />
     <title>{$name}</title>
 
-    <link rel="stylesheet" type="text/css" media="screen" href="<?php url('/public/css/style.css'); ?>" />
+    <?php stylesheetLinkTag('style'); ?>
 </head>
 <body>
     <?php echo \$template; ?>
@@ -137,6 +137,7 @@ $layoutCode = <<<CODE
 CODE;
 
 $viewCode = <<<CODE
+<?php if (!defined('FARI')) die(); ?>
 <pre>This is a default view template in 'application/views/{$lowercase}.phtml'</pre>
 CODE;
 
@@ -404,36 +405,41 @@ class {$prefix}UserNotAuthenticatedException extends Exception {}
 
 CODE;
 
-$viewCode = <<<CODE
+$layoutCode = <<<CODE
 <?php if (!defined('FARI')) die(); ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta http-equiv="Content-Language" content="en" />
-    <title>{$name} Login</title>
+    <title>{$name}</title>
 
-    <link rel="stylesheet" type="text/css" media="screen" href="<?php url('/public/css/style.css'); ?>" />
+    <?php stylesheetLinkTag('style'); ?>
 </head>
 <body>
-    <?php if (isset(\$messages)) foreach(\$messages as \$message): ?>
-        <pre class="<?php echo \$message['status']; ?>"><?php echo \$message['message']; ?></pre>
-    <?php endforeach; ?>
-
-    <form class="form" method="POST" action="<?php url('/{$lowercase}/login/'); ?>">
-        <div class="field">
-            <label>Username</label>
-            <input name="username" type="text" />
-        </div>
-        <div class="field">
-            <label>Password</label>
-            <input name="password" type="password" />
-        </div>
-        <input type="hidden" name="token" value="<?php echo \$token; ?>" />
-        <input type="submit" class="button" value="Sign in" />
-    </form>
+    <?php echo \$template; ?>
 </body>
 </html>
+CODE;
+
+$viewCode = <<<CODE
+<?php if (!defined('FARI')) die(); ?>
+<?php if (isset(\$messages)) foreach(\$messages as \$message): ?>
+    <pre class="<?php echo \$message['status']; ?>"><?php echo \$message['message']; ?></pre>
+<?php endforeach; ?>
+
+<form class="form" method="POST" action="<?php url('/{$lowercase}/login/'); ?>">
+    <div class="field">
+        <label>Username</label>
+        <input name="username" type="text" />
+    </div>
+    <div class="field">
+        <label>Password</label>
+        <input name="password" type="password" />
+    </div>
+    <input type="hidden" name="token" value="<?php echo \$token; ?>" />
+    <input type="submit" class="button" value="Sign in" />
+</form>
 CODE;
 
     $presenterPath = 'application/presenters';
@@ -456,6 +462,9 @@ CODE;
 
         // check/create views directory
         createDirectory($viewsPath . '/');
+
+        // presenter layout
+        createFile("{$viewsPath}/@{$lowercase}.phtml", $layoutCode);
 
         // create appropriate presenter-named views dir
         createDirectory("{$viewsPath}/{$name}/");
