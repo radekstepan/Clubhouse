@@ -210,6 +210,8 @@ class {$name} extends Table {
 
     /********************* relationships *********************/
 
+    /** @example: \$this->findAddresses()->where(1); // will associate with table 'addresses' */
+
     /** @var array a "one-to-one association" with another table(s) through primary keys */
     //public \$hasOne;
 

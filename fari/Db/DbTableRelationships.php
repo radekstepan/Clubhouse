@@ -19,8 +19,8 @@
  */
 class Fari_DbTableRelationships {
 
-    /** @var string a table name to query in "has*" queries */
-    public $relationship;
+    /** @var array that might have relationship set */
+    private $relationship;
 
     /**
      * Has one relationship through "foreign_id" key.
@@ -91,35 +91,89 @@ class Fari_DbTableRelationships {
     }
 
     /**
-     * Will query "has*" relationships of this table.
+     * Check that I can haz a query to other table I loolz to.
+     * @param Table $table
+     * @param string $foreignTableName
+     * @throws Fari_Exception ... throws up big lulz
+     */
+    public function iCanHazQuery(Table $table, $foreignTableName) {
+        try {
+            // one-to-one
+            if (isset($table->hasOne)) {
+                if (is_array($table->hasOne)) {
+                    // $hasOne array
+                    if (in_array($foreignTableName, $table->hasOne)) {
+                        $this->relationship = array('hasOne' => $foreignTableName);
+                    } else {
+                        // fail
+                        $stringHasArray = implode('|', $table->hasOne);
+                        throw new Fari_Exception("Table relationship with '{$foreignTableName}' is not defined
+                            did you mean [{$stringHasArray}]?");
+                    }
+                } else {
+                    // $hasOne string
+                    if ($foreignTableName == $table->hasOne) {
+                        $this->relationship = array('hasOne' => $foreignTableName);
+                    } else {
+                        // fail
+                        throw new Fari_Exception("Table relationship with '{$foreignTableName}' is not defined
+                            did you mean [{$table->hasOne}]?");
+                    }
+                }
+            }
+            // one-to-many
+            else if (isset($table->hasMany)) {
+                if (is_array($table->hasMany)) {
+                    // $hasMany array
+                    if (in_array($foreignTableName, $table->hasMany)) {
+                        $this->relationship = array('hasMany' => $foreignTableName);
+                    } else {
+                        // fail
+                        $stringHasArray = implode('|', $table->hasMany);
+                        throw new Fari_Exception("Table relationship with '{$foreignTableName}' is not defined
+                            did you mean [{$stringHasArray}]?");
+                    }
+                } else {
+                    // $hasMany string
+                    if ($foreignTableName == $table->hasMany) {
+                        $this->relationship = array('hasMany' => $foreignTableName);
+                    } else {
+                        // fail
+                        throw new Fari_Exception("Table relationship with '{$foreignTableName}' is not defined
+                            did you mean [{$table->hasMany}]?");
+                    }
+                }
+            }
+            // fail...
+            else {
+                throw new Fari_Exception("Table relationship with '{$foreignTableName}' is not defined");
+            }
+        } catch (Fari_Exception $exception) { $exception->fire(); }
+    }
+
+    /**
+     * Will query "has*" relationships of this table. We call this fce after WHERE clause has been built.
      * @param Table $table
      */
-    public function iCanHazQuery(Table $table) {
-        // 'blank' then no relationship...
-        if (is_null($table->select) || is_array($table->select)) return;
+    public function checkHazQuery(Table $table) {
+        // you haz WHERE clause?
+        assert('is_array($table->where); // you need to define the WHERE clause first');
 
-        // check this table actually has relationships defined
-        // one-to-one
-        if (isset($table->hasOne) && (in_array($table->select, $table->hasOne))) {
-            $this->hasOne($table, $table->select);
-            $table->select = NULL;
-        }
-        // one-to-many
-        else if (isset($table->hasMany) && (in_array($table->select, $table->hasMany))) {
-            $this->hasMany($table, $table->select);
-            $table->select = NULL;
-        } else {
-            // relationship undefined
-            assert("; // relationship with '{$select}' is not defined");
-        }
+        // do we have a relationship set?
+        if (is_array($this->relationship)) {
+            foreach ($this->relationship as $rs => $foreignTableName) {
+                // I haz
+                $this->$rs($table, $foreignTableName);
+            }
 
-        // fixup where clause by prepending our table name if not present
-        assert('is_array($table->where); // where clause needs to be set');
-        if (array_key_exists($table->primaryKey, $table->where)) {
-            // save under new key with our table name prepended
-            $table->where["{$table->tableName}.{$table->primaryKey}"] = $table->where[$table->primaryKey];
-            // unset
-            unset($table->where[$table->primaryKey]);
+            // fixup where clause by prepending our table name if not present
+            assert('is_array($table->where); // where clause needs to be set');
+            if (array_key_exists($table->primaryKey, $table->where)) {
+                // save under new key with our table name prepended
+                $table->where["{$table->tableName}.{$table->primaryKey}"] = $table->where[$table->primaryKey];
+                // unset
+                unset($table->where[$table->primaryKey]);
+            }
         }
     }
 

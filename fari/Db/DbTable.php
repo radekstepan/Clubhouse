@@ -54,6 +54,9 @@ class Table {
     /** @Fari_DbValidator observer subject for query validation */
     private $validator;
 
+    /** @Fari_DbTableRelationships prep relationships so we can relate */
+    private $relationships;
+
     /**
 	 * Setup a database connection (to a table)
 	 * @param string an optional table name, optional only in PHP <= 5.3.0
@@ -83,6 +86,9 @@ class Table {
 
         // attach validator
         $this->validator = $this->attachValidator();
+
+        // prep relationships
+        $this->relationships = new Fari_DbTableRelationships();
     }
 
     /**
@@ -94,27 +100,33 @@ class Table {
     }
 
     /**
-     * Rails-like calls, captures undefined methods
-     * @link http://techportal.ibuildings.com/2010/01/11/learning-php-5-3-by-writing-your-own-orm/
+     * Rails-like calls, captures undefined methods via method overloading.
      * @param string $method
      * @param mixed $params
      */
-    //public static function __callStatic($method, $params) {
-    //    try {
-    //        // determine the method called
-    //        if (!preg_match('/^(find|findFirst|count)By(\w+)$/', $method, $matches)) {
-    //            throw new Fari_Exception("Call to undefined method {$method}");
-    //        }
-    //    } catch (Fari_Exception $exception) { $exception->fire(); }
-    //
-    //    $criteriaKeys = explode('_And_', preg_replace('/([a-z0-9])([A-Z])/', '$1_$2', $matches[2]));
-    //    $criteriaKeys = array_map('strtolower', $criteriaKeys);
-    //    $criteriaValues = array_slice($params, 0, count($criteriaKeys));
-    //    $criteria = array_combine($criteriaKeys, $criteriaValues);
-    //
-    //    $method = $matches[1];
-    //    return static::$method($criteria);
-    //}
+    public function __call($method, $params) {
+        try {
+            // determine the method called
+            if (!preg_match('/^(findFirst|findLast|find)(\w+)$/', $method, $matches)) {
+                throw new Fari_Exception("Call to undefined method {$method}");
+            }
+
+            // what do you want?
+            switch ($matches[1]) {
+                // setup relationship if is possible
+                case 'findFirst':
+                case 'findLast':
+                case 'find':
+                    $this->relationships->iCanHazQuery(&$this, strtolower($matches[2]));
+                    // then call find as usual...
+                    return $this->$matches[1]();
+                    break;
+                default:
+                    throw new Fari_Exception("Call to undefined parameter {$matches[1]}");
+            }
+
+        } catch (Fari_Exception $exception) { $exception->fire(); }
+    }
 
 
 
@@ -192,8 +204,7 @@ class Table {
         } catch (Fari_Exception $exception) { $exception->fire(); }
 
         // any relationships?
-        $has = new Fari_DbTableRelationships();
-        $has->iCanHazQuery(&$this);
+        $this->relationships->checkHazQuery(&$this);
 
         // method call
         $result = $this->{$this->method}();

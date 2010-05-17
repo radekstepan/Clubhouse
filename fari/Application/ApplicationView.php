@@ -38,7 +38,7 @@ final class Fari_ApplicationView {
         // set the values in the helpers so they 'catch' them
         Fari_ApplicationViewHelper::setValues($this->values);
     }
-	
+
  	/**
      * Displays the view after (optionally) render function in a presenter has been executed.
 	 * @param string $viewName View name to display
