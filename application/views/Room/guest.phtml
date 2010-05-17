@@ -1,15 +1,5 @@
 <?php if (!defined('FARI')) die(); ?>
-<body onload="
-    $('text').observe('keypress', function(event){ if (event.keyCode == Event.KEY_RETURN) sendMessage();});
-    $('topicEntry').observe('keypress', function(event){ if (event.keyCode == Event.KEY_RETURN) editTopic();});
-
-    $('text').focus();
-    scroll = true;
-    roomName = '<?php echo $room['name']; ?>';
-    domainAddress = '<?php url('', TRUE, TRUE); ?>';
-    getMessages('<?php url('/message/get/'); ?>', '<?php echo $room['id']; ?>', lastMessage);
-    pollRoom('<?php url('/room/poll/'); ?>', '<?php echo $room['id']; ?>');
-">    
+<?php renderPartial('body'); ?>
     <!-- menu -->
     <div id="menu" class="guest"></div>
 

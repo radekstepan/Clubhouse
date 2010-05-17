@@ -12,11 +12,91 @@
 
 
 /**
+ * Helper class containing values etc.
+ * 
+ * @copyright Copyright (c) 2008, 2010 Radek Stepan
+ * @package   Fari Framework\Application
+ */
+final class Fari_ApplicationViewHelper {
+
+    /** @var array of values coming from the presenter */
+    private static $values;
+
+    /** @var string presenter name */
+    private static $presenter;
+
+    /**
+     * Set values.
+     * @param array $values
+     */
+    public static function setValues(array $values) {
+        self::$values = $values;
+    }
+
+    /**
+     * Get values
+     * @return array
+     */
+    public static function getValues() {
+        return self::$values;
+    }
+
+    /**
+     * Set presenter name.
+     * @param string $presenterName
+     */
+    public static function setPresenter($presenterName) {
+        self::$presenter = $presenterName;
+    }
+
+    /**
+     * Get presenter name.
+     * @return string
+     */
+    public static function getPresenter() {
+        return self::$presenter;
+    }
+
+}
+
+
+
+/********************* helpers accessible from the template/partial *********************/
+
+
+
+/**
  * Helper functions to use in views.
  *
  * @copyright Copyright (c) 2008, 2010 Radek Stepan
  * @package   Fari Framework\Application
  */
+
+/**
+ * Render a view template partial.
+ * @param string $name to load without the prefix
+ */
+function renderPartial($name) {
+    assert('!empty($name); // provide a name for the partial');
+
+    // build up a path using underscore prefix for a partial
+    $partial = BASEPATH . '/' . APP_DIR . '/views/' .
+        Fari_ApplicationViewHelper::getPresenter() . '/_' . $name . '.phtml';
+    
+    // is it valid?
+    try {
+        // check if file path exists
+        if (!file_exists($partial)) {
+            throw new Fari_Exception('Partial could not be located in: ' . $partial);
+        }
+    } catch (Fari_Exception $exception) { $exception->fire(); }
+
+    // extract values so we have access to them
+    extract(Fari_ApplicationViewHelper::getValues(), EXTR_SKIP);
+
+    // include it finaly
+    include $partial;
+}
 
 /**
  * Generates a link to a stylesheet in /public.
@@ -154,6 +234,27 @@ function linkTo($link, $ref='link') {
  */
 function mailTo($link, $ref='email') {
     autoLink($link, $ref, 'email');
+}
+
+/**
+ * Echo URL.
+ * @param string $link Controller/Action to call
+ * @param boolean $echo echo output immediatelly?
+ * @param boolean $domain prepend domain?
+ */
+function url($link, $echo=TRUE, $domain=FALSE) {
+    // we want a full domain name
+    if ($domain) {
+        // assume we are either using HTTP or HTTPS
+        $url = ($_SERVER['HTTPS'] != 'on') ? 'http://' . $_SERVER['HTTP_HOST'] . WWW_DIR . '/' . $link :
+        'https://' . $_SERVER['HTTP_HOST'] . WWW_DIR . '/' . $link;
+    } else {
+        // default link
+        $url = ($link[0] == '/') ? WWW_DIR . $link : WWW_DIR . '/' . $link;
+    }
+
+    // echo to the view or return as a string
+    if ($echo) echo $url; else return $url;
 }
 
 /**

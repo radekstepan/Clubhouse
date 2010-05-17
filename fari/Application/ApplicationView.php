@@ -33,8 +33,10 @@ final class Fari_ApplicationView {
     public function __construct(array $values) {
         $this->values = $values;
 
-        // and include view helpers
+        // include view helpers
         include BASEPATH . "/fari/Application/ApplicationViewHelpers" . EXT;
+        // set the values in the helpers so they 'catch' them
+        Fari_ApplicationViewHelper::setValues($this->values);
     }
 	
  	/**
@@ -57,6 +59,10 @@ final class Fari_ApplicationView {
         // are we using a @layout file?
         $temp = explode('/', $viewName);
         assert('count($temp) == 2; // $viewName needs to consist of "presenter/file"');
+
+        // define presenter name for easy access
+        Fari_ApplicationViewHelper::setPresenter($temp[0]);
+
         // custom layout named after our presenter
         if (file_exists($layout = $path . '@' . strtolower($temp[0]) . self::VIEW_SUFFIX)) {
             $this->includeLayoutAndView($layout, $viewFile);
