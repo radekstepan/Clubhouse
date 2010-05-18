@@ -18,18 +18,18 @@
  * @copyright Copyright (c) 2010 Radek Stepan
  * @package   Clubhouse\Presenters
  */
-class InstallationPresenter extends Fari_ApplicationPresenter {
+final class InstallationPresenter extends Fari_ApplicationPresenter {
 
     /**
      * Applied automatically before any action is called.
      */
     public function filterStartup() {
-        if (Fari_DbSqLite::isDbWritable()) $this->response->redirect('/error404/');
+        if (Fari_DbSqLite::isDbWritable()) $this->response->redirectTo('/error404/');
     }
 
     public function actionIndex($p) {
         new Installation();
-        $this->response->redirect('/');
+        $this->response->redirectTo('/');
     }
 
 }

@@ -74,7 +74,10 @@ final class Fari_ApplicationView {
             extract($this->values, EXTR_SKIP);
             
             // no soup for you!
+            $devMode = Fari_ApplicationEnvironment::isDevelopment();
+            if ($devMode) echo "\n<!-- begin {$viewFile} -->\n";
             include $viewFile;
+            if ($devMode) echo "\n<!-- end {$viewFile} -->\n";
         }
 	}
 	
@@ -106,13 +109,21 @@ final class Fari_ApplicationView {
         // import key:value array into symbol table
         extract($this->values, EXTR_SKIP);
 
+        // display paths to files in development mode
+        $devMode = Fari_ApplicationEnvironment::isDevelopment();
+
         ob_start();
         // save view into template var
+        if ($devMode) echo "\n<!-- begin {$view} -->\n";
         include $view;
+        if ($devMode) echo "\n<!-- end {$view} -->\n";
         $template = ob_get_contents();
         ob_end_clean();
+
         // call parent layout
+        if ($devMode) echo "<!-- begin {$layout} -->\n";
         include $layout;
+        if ($devMode) echo "\n<!-- end {$layout} -->\n";
     }
 	
 }

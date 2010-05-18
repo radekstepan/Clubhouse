@@ -27,8 +27,8 @@
                     | <a href="#" class="orange">
                 Edit your personal info</a></span> Users</h1>
 
-            <?php if (isset($messages)) foreach($messages as $message): ?>
-                <div id="flash" class="<?php echo $message['status']; ?>"><?php echo $message['message']; ?></div>
+            <?php foreach (flash() as $message): ?>
+                <div id="flash" class="<?php echo $message['key']; ?>"><?php echo $message['text']; ?></div>
             <?php endforeach; ?>
 
             <table class="alternate" id="users">

@@ -101,7 +101,7 @@ $presenterCode = <<<CODE
  *
  * @package   Application\Presenters
  */
-class {$name}Presenter extends Fari_ApplicationPresenter {
+final class {$name}Presenter extends Fari_ApplicationPresenter {
 
     /**
      * Applied automatically before any action is called.
@@ -138,7 +138,7 @@ CODE;
 
 $viewCode = <<<CODE
 <?php if (!defined('FARI')) die(); ?>
-<pre>This is a default view template in 'application/views/{$lowercase}.phtml'</pre>
+<pre>This is a default view template in 'application/views/{$name}/{$index}.phtml'</pre>
 CODE;
 
     $presenterPath = 'application/presenters';
@@ -282,7 +282,7 @@ $presenterCode = <<<CODE
  *
  * @package   Application\Presenters
  */
-class {$name}Presenter extends Fari_ApplicationPresenter {
+final class {$name}Presenter extends Fari_ApplicationPresenter {
 
     /**#@+ where to redirect on successful login? */
     const ADMIN = 'admin';
@@ -307,13 +307,11 @@ class {$name}Presenter extends Fari_ApplicationPresenter {
             try {
                 \$this->user = new {$name}Auth(\$username, \$password, \$this->request->getPost('token'));
 
-                \$this->response->redirect('/' . self::ADMIN);
+                \$this->response->redirectTo('/' . self::ADMIN);
             } catch ({$prefix}UserNotAuthenticatedException \$e) {
-                Fari_Message::fail("Sorry, your username or password wasn't recognized");
+                \$this->flashFail = "Sorry, your username or password wasn't recognized";
             }
         }
-
-        \$this->bag->messages = Fari_Message::get();
 
 		// create token & display login form
 		\$this->bag->token = Fari_FormToken::create();
@@ -326,13 +324,11 @@ class {$name}Presenter extends Fari_ApplicationPresenter {
     public function actionLogout() {
         // do we have an instance?
         if (\$this->user instanceof {$prefix}User) {
-            Fari_Message::success('You have been logged out');
+            \$this->flashSuccess = 'You have been logged out';
             \$this->user->signOut();
         } else {
-            Fari_Message::success('You are already logged out');
+            \$this->flashSuccess = 'You are already logged out';
         }
-
-        \$this->bag->messages = Fari_Message::get();
 
         // create token & display login form
         \$this->bag->token = Fari_FormToken::create();
@@ -426,8 +422,8 @@ CODE;
 
 $viewCode = <<<CODE
 <?php if (!defined('FARI')) die(); ?>
-<?php if (isset(\$messages)) foreach(\$messages as \$message): ?>
-    <pre class="<?php echo \$message['status']; ?>"><?php echo \$message['message']; ?></pre>
+<?php foreach (\flash() as \$message): ?>
+    <pre class="<?php echo \$message['key']; ?>"><?php echo \$message['text']; ?></pre>
 <?php endforeach; ?>
 
 <form class="form" method="POST" action="<?php url('/{$lowercase}/login/'); ?>">

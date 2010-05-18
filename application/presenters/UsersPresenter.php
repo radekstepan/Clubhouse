@@ -18,7 +18,7 @@
  * @copyright Copyright (c) 2010 Radek Stepan
  * @package   Clubhouse\Presenters
  */
-class UsersPresenter extends Fari_ApplicationPresenter {
+final class UsersPresenter extends Fari_ApplicationPresenter {
 
     private $user = FALSE;
     private $accounts;
@@ -32,7 +32,7 @@ class UsersPresenter extends Fari_ApplicationPresenter {
             $this->user = new User('admin');
 
         } catch (UserNotAuthenticatedException $e) {
-            $this->response->redirect('/login/');
+            $this->response->redirectTo('/login/');
 
         } catch (UserNotAuthorizedException $e) {
             $this->render('Error404/error404');
@@ -53,7 +53,6 @@ class UsersPresenter extends Fari_ApplicationPresenter {
 	 */
 	public function actionIndex($p) {
         $this->bag->tabs = $this->user->inRooms();
-        $this->bag->messages = Fari_Message::get();
 
         $system = new System();
 
@@ -104,7 +103,7 @@ class UsersPresenter extends Fari_ApplicationPresenter {
                 }
 
                 // back to the users listing
-                $this->response->redirect('/users/');
+                $this->response->redirectTo('/users/');
             } else {
                 // display the form
                 $this->render();

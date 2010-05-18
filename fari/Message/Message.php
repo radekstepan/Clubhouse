@@ -14,6 +14,7 @@
 /**
  * Manages messages to be flashed to the user. Uses session to preserve content across redirects.
  *
+ * @deprecated
  * @copyright Copyright (c) 2008, 2010 Radek Stepan
  * @package   Fari Framework\Message
  */

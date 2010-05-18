@@ -18,7 +18,7 @@
  * @copyright Copyright (c) 2010 Radek Stepan
  * @package   Clubhouse\Presenters
  */
-class TranscriptsPresenter extends Fari_ApplicationPresenter {
+final class TranscriptsPresenter extends Fari_ApplicationPresenter {
 
     private $user = FALSE;
 
@@ -33,7 +33,7 @@ class TranscriptsPresenter extends Fari_ApplicationPresenter {
             $this->user = new User(array('admin', 'registered'));
             
         } catch (UserNotAuthenticatedException $e) {
-            $this->response->redirect('/login/');
+            $this->response->redirectTo('/login/');
 
         } catch (UserNotAuthorizedException $e) {
             $this->response->render('Error404/error404');
@@ -182,7 +182,7 @@ class TranscriptsPresenter extends Fari_ApplicationPresenter {
             $transcript->delete($date, $this->user->getShortName());
 
             // redirect back
-            $this->response->redirect('/transcripts/');
+            $this->response->redirectTo('/transcripts/');
         } else {
             $this->render('Error404/error404');
         }

@@ -79,9 +79,15 @@ final class Fari_ApplicationViewHelper {
 function renderPartial($name) {
     assert('!empty($name); // provide a name for the partial');
 
-    // build up a path using underscore prefix for a partial
-    $partial = BASEPATH . '/' . APP_DIR . '/views/' .
-        Fari_ApplicationViewHelper::getPresenter() . '/_' . $name . '.phtml';
+    // are we using a custom partial or default?
+    if (strpos($name, '/') !== FALSE) {
+        $partial = BASEPATH . '/' . APP_DIR . '/views/' . ucfirst(current($name = explode('/', $name)))
+            . '/_' . end($name) . '.phtml';
+    } else {
+        // build up a path using underscore prefix for a partial
+        $partial = BASEPATH . '/' . APP_DIR . '/views/' . Fari_ApplicationViewHelper::getPresenter()
+            . '/_' . $name . '.phtml';
+    }
     
     // is it valid?
     try {
@@ -94,8 +100,30 @@ function renderPartial($name) {
     // extract values so we have access to them
     extract(Fari_ApplicationViewHelper::getValues(), EXTR_SKIP);
 
-    // include it finaly
+    // include it finaly with comments around, but only in development mode
+    $devMode = Fari_ApplicationEnvironment::isDevelopment();
+    if ($devMode) echo "\n<!-- begin {$partial} -->\n";
     include $partial;
+    if ($devMode) echo "\n<!-- end {$partial} -->\n";
+}
+
+/**
+ * Retrieve flashed messages.
+ * @return array (key => text)
+ */
+function flash() {
+    $messages = array();
+    // traverse the whole session looking for messages
+    foreach ($_SESSION as $key => $value) {
+        // our messages
+        if (strstr($key, 'Fari\Flash\\' . APP_SALT) !== FALSE) {
+            // 'save' message to the array
+            $messages[$key] = $value;
+            // 'delete' the message
+            unset($_SESSION[$key]);
+        }
+    }
+    return $messages;
 }
 
 /**

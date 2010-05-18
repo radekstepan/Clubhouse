@@ -18,7 +18,7 @@
  * @copyright Copyright (c) 2010 Radek Stepan
  * @package   Clubhouse\Presenters
  */
-class FilePresenter extends Fari_ApplicationPresenter {
+final class FilePresenter extends Fari_ApplicationPresenter {
 
     private $user = FALSE;
     private $file;
@@ -31,7 +31,7 @@ class FilePresenter extends Fari_ApplicationPresenter {
         try {
             $this->user = new User();
         } catch (UserNotAuthenticatedException $e) {
-            $this->response->redirect('/login/');
+            $this->response->redirectTo('/login/');
         }
 	}
 

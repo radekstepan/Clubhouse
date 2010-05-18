@@ -18,7 +18,7 @@
  * @copyright Copyright (c) 2010 Radek Stepan
  * @package   Clubhouse\Presenters
  */
-class MessagePresenter extends Fari_ApplicationPresenter {
+final class MessagePresenter extends Fari_ApplicationPresenter {
 
     private $user = FALSE;
     private $room;
@@ -49,7 +49,7 @@ class MessagePresenter extends Fari_ApplicationPresenter {
         }
 	}
 	
-	public function actionIndex($p) { $this->response->redirect('/error404/'); }
+	public function actionIndex($p) { $this->response->redirectTo('/error404/'); }
 
 
 

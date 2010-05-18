@@ -18,7 +18,7 @@
  * @copyright Copyright (c) 2010 Radek Stepan
  * @package   Clubhouse\Presenters
  */
-class LobbyPresenter extends Fari_ApplicationPresenter {
+final class LobbyPresenter extends Fari_ApplicationPresenter {
 
     private $user = FALSE;
 	
@@ -33,13 +33,13 @@ class LobbyPresenter extends Fari_ApplicationPresenter {
             if ($this->request->isAjax()) {
                 $this->response('bye', 'json');
             } else {
-                $this->response->redirect('/login/');
+                $this->response->redirectTo('/login/');
             }
         } catch (UserNotAuthorizedException $e) {
             if ($this->request->isAjax()) {
                 $this->response('bye', 'json');
             } else {
-                $this->response->redirect('/login/');
+                $this->response->redirectTo('/login/');
             }
         }
 	}

@@ -70,7 +70,7 @@ class Upload extends Fari_Bag {
     private function randomCode($db) {
         $code = Fari_Tools::randomCode(6);
         $result = $db->selectRow('files', 'id', array('code' => $code));
-        return (!empty($result)) ? $this->_randomCode() : $code;
+        return (!empty($result)) ? $this->randomCode() : $code;
     }
         
 }

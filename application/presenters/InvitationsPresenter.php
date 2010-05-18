@@ -18,7 +18,7 @@
  * @copyright Copyright (c) 2010 Radek Stepan
  * @package   Clubhouse\Presenters
  */
-class InvitationsPresenter extends Fari_ApplicationPresenter {
+final class InvitationsPresenter extends Fari_ApplicationPresenter {
 
     private $user = FALSE;
     private $accounts;
@@ -32,7 +32,7 @@ class InvitationsPresenter extends Fari_ApplicationPresenter {
             $this->user = new User('admin');
 
         } catch (UserNotAuthenticatedException $e) {
-            $this->response->redirect('/login/');
+            $this->response->redirectTo('/login/');
 
         } catch (UserNotAuthorizedException $e) {
             $this->render('Error404/error404');
@@ -71,12 +71,12 @@ class InvitationsPresenter extends Fari_ApplicationPresenter {
                 try {
                     $mail->sendInvitation();
                 } catch (UserNotFoundException $e) {
-                    $this->response->redirect('/error404/');
+                    $this->response->redirectTo('/error404/');
                 }
 
-                Fari_Message::success("$name is now added to your account. An email with instructions was sent to $email");
+                $this->flashSuccess = "$name is now added to your account. An email with instructions was sent to $email";
 
-                $this->response->redirect('/users/');
+                $this->response->redirectTo('/users/');
             }
         }
 

@@ -18,7 +18,7 @@
  * @copyright Copyright (c) 2010 Radek Stepan
  * @package   Clubhouse\Presenters
  */
-class Error404Presenter extends Fari_ApplicationPresenter {
+final class Error404Presenter extends Fari_ApplicationPresenter {
 
     /**
 	 * Page has not been found

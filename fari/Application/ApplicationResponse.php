@@ -165,7 +165,7 @@ class Fari_ApplicationResponse {
 	 * Will redirect to a URL (/presenter/action). Works with both synchronous/asynchronous calls.
 	 * @param string $url URL to redirect to
 	 */
-	function redirect($url) {
+	function redirectTo($url) {
 		// add forward slash if not specified
 		if ($url[0] !== '/') $url .= '/';
 

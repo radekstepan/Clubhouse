@@ -18,7 +18,7 @@
  * @copyright Copyright (c) 2010 Radek Stepan
  * @package   Clubhouse\Presenters
  */
-class AuthPresenter extends Fari_ApplicationPresenter {
+final class AuthPresenter extends Fari_ApplicationPresenter {
 
     private $user = FALSE;
 	
@@ -44,14 +44,12 @@ class AuthPresenter extends Fari_ApplicationPresenter {
             try {
                 $this->user = new UserLogin($username, $password, $this->request->getPost('token'));
             } catch (UserNotAuthenticatedException $e) {
-                Fari_Message::fail('Sorry, your username or password wasn\'t recognized');
+                $this->flashFail = 'Sorry, your username or password wasn\'t recognized';
 
             }
 
-            $this->response->redirect('/');
+            $this->response->redirectTo('/');
         }
-
-        $this->bag->messages = Fari_Message::get();
         
 		// create token & display login form
 		$this->bag->token = Fari_FormToken::create();
@@ -72,7 +70,7 @@ class AuthPresenter extends Fari_ApplicationPresenter {
             // we might not be signed in actually
             $this->user = new User();
         } catch (UserNotAuthenticatedException $e) {
-            Fari_Message::success('You are already logged out');
+            $this->flashSuccess = 'You are already logged out';
         }
 
         // as we are logging out, leave us from all rooms
@@ -91,12 +89,10 @@ class AuthPresenter extends Fari_ApplicationPresenter {
                 $room->removeParticipant($this->user->getId());
             }
 
-            Fari_Message::success('You have been logged out');
+            $this->flashSuccess = 'You have been logged out';
 
             $this->user->signOut();
         }
-
-        $this->bag->messages = Fari_Message::get();
 
         $this->bag->token = Fari_FormToken::create();
 		$this->render('login');

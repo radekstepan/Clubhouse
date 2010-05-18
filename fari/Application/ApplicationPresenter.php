@@ -31,6 +31,9 @@ abstract class Fari_ApplicationPresenter {
     /** @var enabled through renderCache() */
     private $cache = FALSE;
 
+    /** @var Fari_ApplicationPresenterHelpers */
+    private $helpers;
+
 	/**
      * Set registry when new object gets instantiated and use classname when filterStartup().
      * @param Fari_ApplicationRoute setup in the Request
@@ -42,6 +45,9 @@ abstract class Fari_ApplicationPresenter {
 
         // initialize a bag of values for our use
         $this->bag = new Fari_Bag();
+
+        // setup helpers and potentionally save some values to the newly initialized bag of values
+        $this->helpers = new Fari_ApplicationPresenterHelpers(&$this->bag);
 
         // initialization function called before anything else if is defined
 		if (method_exists($this->request->getPresenter(), filterStartup)) $this->filterStartup();
@@ -173,6 +179,22 @@ abstract class Fari_ApplicationPresenter {
 
         // form an array pair
         return array('prefix' => $prefix, 'name' => $viewName);
+    }
+
+
+
+    /********************* presenter helpers *********************/
+
+
+
+    /**
+     * Capture requests from the presenter and redirect them to the helper.
+     * @param string $method key
+     * @param mixed $params
+     */
+    public function __set($method, $params) {
+        // now do magic, parse in helpers...
+        $this->helpers->$method = $params;
     }
 
 }

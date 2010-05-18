@@ -18,7 +18,7 @@
  * @copyright Copyright (c) 2010 Radek Stepan
  * @package   Clubhouse\Presenters
  */
-class RoomPresenter extends Fari_ApplicationPresenter {
+final class RoomPresenter extends Fari_ApplicationPresenter {
 
     private $user = FALSE;
 
@@ -36,7 +36,7 @@ class RoomPresenter extends Fari_ApplicationPresenter {
         try {
             $this->user = new User();
         } catch (UserNotAuthenticatedException $e) {
-            $this->response->redirect('/login/');
+            $this->response->redirectTo('/login/');
         }
         
         // we will use our ID in the view to match our messages
@@ -152,7 +152,7 @@ class RoomPresenter extends Fari_ApplicationPresenter {
             }
         }
         // redir either way
-        $this->response->redirect('/');
+        $this->response->redirectTo('/');
 	}
 
 

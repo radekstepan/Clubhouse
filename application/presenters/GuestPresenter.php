@@ -18,7 +18,7 @@
  * @copyright Copyright (c) 2010 Radek Stepan
  * @package   Clubhouse\Presenters
  */
-class GuestPresenter extends Fari_ApplicationPresenter {
+final class GuestPresenter extends Fari_ApplicationPresenter {
     
     private $guestUser;
     private $room;
@@ -145,7 +145,7 @@ class GuestPresenter extends Fari_ApplicationPresenter {
             if (!empty($room)) $db->insert('user_permissions', array('room' => $room['id'], 'user' => $userId));
         }
         // redirect to the room, if we've ailed will be asked for guest's name again
-        $this->response->redirect('/g/' . $code);
+        $this->response->redirectTo('/g/' . $code);
     }
 
 }

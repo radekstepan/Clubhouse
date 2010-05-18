@@ -18,7 +18,7 @@
  * @copyright Copyright (c) 2010 Radek Stepan
  * @package   Clubhouse\Presenters
  */
-class SettingsPresenter extends Fari_ApplicationPresenter {
+final class SettingsPresenter extends Fari_ApplicationPresenter {
 
     private $user = FALSE;
     private $settings;
@@ -32,7 +32,7 @@ class SettingsPresenter extends Fari_ApplicationPresenter {
             $this->user = new User('admin');
 
         } catch (UserNotAuthenticatedException $e) {
-            $this->response->redirect('/login/');
+            $this->response->redirectTo('/login/');
 
         } catch (UserNotAuthorizedException $e) {
             $this->render('Error404/error404');
@@ -84,7 +84,7 @@ class SettingsPresenter extends Fari_ApplicationPresenter {
     public function actionReset() {
         $system = new System();
         $system->reset();
-        $this->response->redirect('/');
+        $this->response->redirectTo('/');
     }
 
     public function actionBackup() {
