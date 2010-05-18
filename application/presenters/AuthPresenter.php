@@ -23,7 +23,7 @@ final class AuthPresenter extends Fari_ApplicationPresenter {
     private $user = FALSE;
 	
 	public function actionIndex($p) {
-        $this->render('Error404/error404');
+        $this->renderTemplate('Error404/error404');
     }
 
 
@@ -48,12 +48,12 @@ final class AuthPresenter extends Fari_ApplicationPresenter {
 
             }
 
-            $this->response->redirectTo('/');
+            $this->redirectTo('/');
         }
         
 		// create token & display login form
 		$this->bag->token = Fari_FormToken::create();
-		$this->render();
+		$this->renderAction();
 	}
 
 
@@ -95,7 +95,7 @@ final class AuthPresenter extends Fari_ApplicationPresenter {
         }
 
         $this->bag->token = Fari_FormToken::create();
-		$this->render('login');
+		$this->renderAction('login');
 	}
 
 }

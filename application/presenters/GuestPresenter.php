@@ -51,17 +51,17 @@ final class GuestPresenter extends Fari_ApplicationPresenter {
 
         // the room does not exist
         } catch (RoomNotFoundException $e) {
-            $this->render('room/invalid');
+            $this->renderTemplate('room/invalid');
 
         // we haven't signed in
         } catch (UserNotAuthenticatedException $e) {
             $this->bag->code = $guestCode;
             // show a form to enter a name for the new guest
-            $this->render('account/guest');
+            $this->renderTemplate('account/guest');
 
         // we cannot enter this room
         } catch (UserNotAuthorizedException $e) {
-            $this->render('room/permissions');
+            $this->renderTemplate('room/permissions');
             
         }
                     
@@ -73,7 +73,7 @@ final class GuestPresenter extends Fari_ApplicationPresenter {
             // not in the room... is it locked?
             if ($room['locked']) {
                 $system = new System();
-                $this->render('room/locked');
+                $this->renderTemplate('room/locked');
             } else {
                 // enter them into the room
                 $this->guestUser->enterRoom($room['id'], $time);
@@ -86,7 +86,7 @@ final class GuestPresenter extends Fari_ApplicationPresenter {
 
         // all other fails captured...
         // show a 'guest' view
-        $this->render('room/guest', $room['id']);
+        $this->renderTemplate('room/guest', $room['id']);
     }
 
     public function renderGuest($roomId) {
@@ -145,7 +145,7 @@ final class GuestPresenter extends Fari_ApplicationPresenter {
             if (!empty($room)) $db->insert('user_permissions', array('room' => $room['id'], 'user' => $userId));
         }
         // redirect to the room, if we've ailed will be asked for guest's name again
-        $this->response->redirectTo('/g/' . $code);
+        $this->redirectTo('/g/' . $code);
     }
 
 }

@@ -74,10 +74,22 @@ class Fari_ApplicationRouter {
 		// Presenter is set, now check we can call the Action in it with the appropriate prefix
 		if (!is_callable(array($presenter, $route->action))) {
             $route->setDefaultAction();
-		}
+		} else {
+            // we have implemented method overloading in the presenter so make a little checkup first
+            try {
+                // reflect the action we are calling
+                $method = new Fari_ApplicationReflection($route->presenter, $route->action);
+            } catch (ReflectionException $e) {
+                // set default
+                $route->setDefaultAction();
+            }
+        }
 
         // reflect the action we are calling
-        $method = new Fari_ApplicationReflection($route->presenter, $route->action);
+        // save us some trouble if we've instantiated already
+        if (!$method instanceof Fari_ApplicationReflection) {
+            $method = new Fari_ApplicationReflection($route->presenter, $route->action);
+        }
         // ...and optionally pass variable number of parametres
         if ($method->hasParameters()) $method->setParameters(&$route->parameters);
         // call the action (method) in the Presenter

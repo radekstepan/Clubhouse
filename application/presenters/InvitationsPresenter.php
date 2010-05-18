@@ -32,10 +32,10 @@ final class InvitationsPresenter extends Fari_ApplicationPresenter {
             $this->user = new User('admin');
 
         } catch (UserNotAuthenticatedException $e) {
-            $this->response->redirectTo('/login/');
+            $this->redirectTo('/login/');
 
         } catch (UserNotAuthorizedException $e) {
-            $this->render('Error404/error404');
+            $this->renderTemplate('Error404/error404');
 
         }
         
@@ -71,17 +71,17 @@ final class InvitationsPresenter extends Fari_ApplicationPresenter {
                 try {
                     $mail->sendInvitation();
                 } catch (UserNotFoundException $e) {
-                    $this->response->redirectTo('/error404/');
+                    $this->redirectTo('/error404/');
                 }
 
                 $this->flashSuccess = "$name is now added to your account. An email with instructions was sent to $email";
 
-                $this->response->redirectTo('/users/');
+                $this->redirectTo('/users/');
             }
         }
 
         $this->bag->tabs = $this->user->inRooms();
-        $this->render('new');
+        $this->renderAction('new');
 	}
     
 }

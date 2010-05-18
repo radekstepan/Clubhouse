@@ -32,10 +32,10 @@ final class SettingsPresenter extends Fari_ApplicationPresenter {
             $this->user = new User('admin');
 
         } catch (UserNotAuthenticatedException $e) {
-            $this->response->redirectTo('/login/');
+            $this->redirectTo('/login/');
 
         } catch (UserNotAuthorizedException $e) {
-            $this->render('Error404/error404');
+            $this->renderTemplate('Error404/error404');
 
         }
 
@@ -55,7 +55,7 @@ final class SettingsPresenter extends Fari_ApplicationPresenter {
         $this->bag->tabs = $this->user->inRooms();
         $this->bag->rooms = $this->settings->getRooms();
 
-        $this->render('settings');
+        $this->renderAction('settings');
 	}
 
 
@@ -78,18 +78,18 @@ final class SettingsPresenter extends Fari_ApplicationPresenter {
                 }
                 
             }
-        } else $this->render('error404/javascript');
+        } else $this->renderTemplate('error404/javascript');
 	}
 
     public function actionReset() {
         $system = new System();
         $system->reset();
-        $this->response->redirectTo('/');
+        $this->redirectTo('/');
     }
 
     public function actionBackup() {
         $backup = new Fari_BackupTable();
-        $this->response($backup->dbToXML('users'), 'xml');
+        $this->renderXml($backup->dbToXML('users'));
     }
 
 }

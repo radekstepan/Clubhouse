@@ -31,7 +31,7 @@ final class FilePresenter extends Fari_ApplicationPresenter {
         try {
             $this->user = new User();
         } catch (UserNotAuthenticatedException $e) {
-            $this->response->redirectTo('/login/');
+            $this->redirectTo('/login/');
         }
 	}
 
@@ -55,7 +55,7 @@ final class FilePresenter extends Fari_ApplicationPresenter {
             // save the file and get its code
             $this->file = new Upload($file, $roomId);
 
-            $this->render('upload', $roomId);
+            $this->renderUpload($roomId);
         }
 	}
 
@@ -65,18 +65,18 @@ final class FilePresenter extends Fari_ApplicationPresenter {
         $message = new MessageSpeak($roomId, $time);
 
         $text = '<a class="file ' . $this->file->type . '"></a><a class="blue" href="'
-                . url('file/get/' . $this->file->code, FALSE, TRUE) . '"/>' . $this->file->name . '</a>';
+                . WWW_DIR . '/file/get/' . $this->file->code . '"/>' . $this->file->name . '</a>';
         // live preview image thumbnail
         if ($this->file->thumbnail === TRUE) {
             $text .= '<div class="image"><img src="'
-                    . url('file/thumb/' . $this->file->code, FALSE, TRUE) . '" alt="thumb" /></div>';
+                    . WWW_DIR . '/file/thumb/' . $this->file->code . '" alt="thumb" /></div>';
         } else switch ($this->file->mime) {
             case 'image/jpeg':
             case 'image/jpg':
             case 'image/png':
             case 'image/gif':
                 $text .= '<div class="image"><img src="'
-                    . url('file/get/' . $this->file->code, FALSE, TRUE) . '" alt="image" /></div>';
+                    . WWW_DIR . '/file/get/' . $this->file->code . '" alt="image" /></div>';
         }
 
         $message->text($roomId, $time, $this->user->getShortName(), $this->user->getId(), $text);
@@ -91,11 +91,11 @@ final class FilePresenter extends Fari_ApplicationPresenter {
 
 
     public function actionGet($fileCode) {
-        $this->render('file', array($fileCode, 'file'));
+        $this->renderAction('file', array($fileCode, 'file'));
     }
 
     public function actionThumb($fileCode) {
-        $this->render('file', array($fileCode, 'thumb'));
+        $this->renderAction('file', array($fileCode, 'thumb'));
     }
 
     public function renderFile($fileCode, $type) {
@@ -112,8 +112,8 @@ final class FilePresenter extends Fari_ApplicationPresenter {
 
         if (!empty($file)) {
             // respond with a file download
-            $this->response($file, 'download');
-        } else $this->render('Error404/error404');
+            $this->sendFile($file);
+        } else $this->renderTemplate('Error404/error404');
     }
 
 }

@@ -33,7 +33,7 @@ final class TranscriptsPresenter extends Fari_ApplicationPresenter {
             $this->user = new User(array('admin', 'registered'));
             
         } catch (UserNotAuthenticatedException $e) {
-            $this->response->redirectTo('/login/');
+            $this->redirectTo('/login/');
 
         } catch (UserNotAuthorizedException $e) {
             $this->response->render('Error404/error404');
@@ -61,16 +61,16 @@ final class TranscriptsPresenter extends Fari_ApplicationPresenter {
             // setup new transcripts object
             $transcripts = new TranscriptListing($this->user->getPermissionsDbString());
         } catch (TranscriptEmptyException $e) {
-            $this->render('empty');
+            $this->renderAction('empty');
         }
 
         // are we fetching a page number in a proper range?
         if (!Fari_Filter::isInt($page, array(1, ceil($transcripts->count / $this->pagination)))) {
-            $this->render('Error404/error404');
+            $this->renderTemplate('Error404/error404');
         }
         
         // fetch transcript users, files and highlighted messages
-        $this->render('listing', array(&$transcripts, $page));
+        $this->renderAction('listing', array(&$transcripts, $page));
 	}
 
     public function renderListing($transcripts, $page) {
@@ -133,15 +133,15 @@ final class TranscriptsPresenter extends Fari_ApplicationPresenter {
             $transcript = new Transcript($date, $roomId);
 
         } catch (UserNotAuthorizedException $e) {
-            $this->render('Error404/error404');
+            $this->renderTemplate('Error404/error404');
 
         } catch (TranscriptNotFoundException $e) {
-            $this->render('invalid');
+            $this->renderAction('invalid');
         
         }
 
         // render it
-        $this->render('read', array(&$transcript));
+        $this->renderAction('read', array(&$transcript));
     }
 
     public function renderRead($transcript) {
@@ -175,16 +175,16 @@ final class TranscriptsPresenter extends Fari_ApplicationPresenter {
                 // try to instantiate the transcript...
                 $transcript = new Transcript($date, $roomId);
             } catch (TranscriptNotFoundException $e) {
-                $this->render('invalid');
+                $this->renderAction('invalid');
             }
 
             // delete it
             $transcript->delete($date, $this->user->getShortName());
 
             // redirect back
-            $this->response->redirectTo('/transcripts/');
+            $this->redirectTo('/transcripts/');
         } else {
-            $this->render('Error404/error404');
+            $this->renderTemplate('Error404/error404');
         }
     }
 

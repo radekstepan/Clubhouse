@@ -36,7 +36,7 @@ final class RoomPresenter extends Fari_ApplicationPresenter {
         try {
             $this->user = new User();
         } catch (UserNotAuthenticatedException $e) {
-            $this->response->redirectTo('/login/');
+            $this->redirectTo('/login/');
         }
         
         // we will use our ID in the view to match our messages
@@ -52,10 +52,10 @@ final class RoomPresenter extends Fari_ApplicationPresenter {
         // is this Ajax?
         if ($this->request->isAjax()) {
             if (!Fari_Filter::isInt($roomId)) {
-                $this->response('bye', 'json');
+                $this->renderJson('bye');
             }
         } else {
-            $this->render('error404/javascript');
+            $this->renderTemplate('error404/javascript');
         }
     }
 
@@ -80,18 +80,18 @@ final class RoomPresenter extends Fari_ApplicationPresenter {
                 // are we allowed to enter?
                 $this->user->canEnter($roomId);
 
-                $this->render('room', $roomId);
+                $this->renderAction('room', $roomId);
 
             } catch (RoomNotFoundException $e) {
-                $this->render('invalid');
+                $this->renderAction('invalid');
 
             } catch (UserNotAuthorizedException $e) {
 
-                $this->render('permissions');
+                $this->renderAction('permissions');
             }
             
         } else {
-            $this->render('invalid');
+            $this->renderAction('invalid');
         }
 	}
 
@@ -147,12 +147,12 @@ final class RoomPresenter extends Fari_ApplicationPresenter {
 
                 // the user might be a guest in which case show her a slightly different exit message
                 if ($this->user->isGuest()) {
-                    $this->render('bye');
+                    $this->renderAction('bye');
                 }
             }
         }
         // redir either way
-        $this->response->redirectTo('/');
+        $this->redirectTo('/');
 	}
 
 
@@ -181,9 +181,9 @@ final class RoomPresenter extends Fari_ApplicationPresenter {
 
             // 'refresh' rooms listing much like in a lobby
             $system = new System();
-            $this->response($system->lobbyRooms($this->user->getId(), $this->user->isAdmin()), 'json');
+            $this->renderJson($system->lobbyRooms($this->user->getId(), $this->user->isAdmin()));
         } else {
-            $this->render('error404/javascript');
+            $this->renderTemplate('error404/javascript');
         }
 	}
 
@@ -214,7 +214,7 @@ final class RoomPresenter extends Fari_ApplicationPresenter {
             $message->lock($roomId, $this->user->getShortName(), $status);
 
         } catch (UserNotAuthorizedException $e) {
-            $this->response('bye', 'json');
+            $this->renderJson('bye');
         }
 	}
 
@@ -237,10 +237,10 @@ final class RoomPresenter extends Fari_ApplicationPresenter {
             $this->user->canEnter($roomId);
 
             $room = new Room();
-            $this->response($room->poll($roomId), 'json');
+            $this->renderJson($room->poll($roomId));
 
         } catch (UserNotAuthorizedException $e) {
-            $this->response('bye', 'json');
+            $this->renderJson('bye');
         }
     }
 
@@ -272,10 +272,10 @@ final class RoomPresenter extends Fari_ApplicationPresenter {
             $message = new MessageSpeak($roomId, $time);
             $message->topic($roomId, $this->user->getShortName(), $topic);
 
-            $this->response($topic, 'json');
+            $this->renderJson($topic);
 
         } catch (UserNotAuthorizedException $e) {
-            $this->response('bye', 'json');
+            $this->renderJson('bye');
         }
 	}
 
@@ -298,10 +298,10 @@ final class RoomPresenter extends Fari_ApplicationPresenter {
             $this->user->canEnter($roomId);
 
             $room = new Room();
-            $this->response($room->guest($roomId, $this->user->getShortName()), 'json');
+            $this->renderJson($room->guest($roomId, $this->user->getShortName()));
 
         } catch (UserNotAuthorizedException $e) {
-            $this->response('bye', 'json');
+            $this->renderJson('bye');
         }
 	}
 

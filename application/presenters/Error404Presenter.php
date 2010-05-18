@@ -24,14 +24,14 @@ final class Error404Presenter extends Fari_ApplicationPresenter {
 	 * Page has not been found
 	 */
 	public function actionIndex($p) {
-        $this->render('error404');
+        $this->renderAction('error404');
 	}
 
     /**
 	 * Asynchronous request not called from JavaScript
 	 */
 	public function actionAjax() {
-        $this->render('javascript');
+        $this->renderAction('javascript');
 	}
 
 }

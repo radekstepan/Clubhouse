@@ -41,9 +41,9 @@ if (!defined('BACKSTAGE')) {
         case "presenter":
             if (empty($name)) {
                 // undefined presenter name
-                message("Usage: php script/generate.php presenter presenterName", 'red');
+                message("Usage: php script/generate.php presenter presenterName [modelName]", 'red');
             } else {
-                newPresenter($name);
+                newPresenter($name, $parameter);
             }
             break;
         case "model":
@@ -86,12 +86,18 @@ if (!defined('BACKSTAGE')) {
 
 /**
  * Create a new presenter/default view pair.
- * @param string $name e.g.: "hello"
+ * @param string $name presenter e.g.: "hello"
+ * @param string $model make connection to a model
  */
-function newPresenter($name) {
+function newPresenter($name, $model=NULL) {
 
 // lowercase
 $lowercase = strtolower($name);
+
+if (!empty($model)) {
+    $model = ucfirst($model);
+    $modelLowercase = strtolower($model);
+}
 
 $presenterCode = <<<CODE
 <?php if (!defined('FARI')) die();
@@ -103,17 +109,120 @@ $presenterCode = <<<CODE
  */
 final class {$name}Presenter extends Fari_ApplicationPresenter {
 
+    /********************* filters *********************/
+
+    /** var filters to apply to these actions before they are called */
+    //public \$beforeFilter = array(
+    //    array('nameOfFilter' => array('nameOfAction'))
+    //);
+
+    /** var filters to apply after all processing has occured */
+    //public \$afterFilter = array(
+    //    array('nameOfFilter' => array('nameOfAction'))
+    //);
+
     /**
      * Applied automatically before any action is called.
      * @example use it to authenticate users or setup locales
      */
     public function filterStartup() { }
 
-    /**
-     * Default action.
-     */
+    /********************* actions *********************/
+
+    /** Responsible for presenting a collection back to the user. */
 	public function actionIndex(\$p) {
-        \$this->render('index');
+        \$this->renderAction('index');
+    }
+
+    /** Responsible for showing a single specific object to the user. */
+	public function actionShow() { }
+
+    /** Responsible for providing the user with an empty form to create a new object. */
+	public function actionNew() { }
+
+    /** Receives the form submission from the new action and creates the new object. */
+	public function actionCreate() { }
+
+    /** Responsible for providing a form populated with a specific object to edit. */
+	public function actionEdit() { }
+
+    /** Receives the form submission from the edit action and updates the specific object. */
+	public function actionUpdate() { }
+
+    /** Deletes the specified object from the database. */
+	public function actionDestroy() { }
+
+}
+CODE;
+
+$presenterAndModelCode = <<<CODE
+<?php if (!defined('FARI')) die();
+
+/**
+ * Description of {$name}.
+ *
+ * @package   Application\Presenters
+ */
+final class {$name}Presenter extends Fari_ApplicationPresenter {
+
+    /** var {$model} Table connection */
+    private \${$modelLowercase};
+
+    /********************* filters *********************/
+
+    /** var filters to apply to these actions before they are called */
+    //public \$beforeFilter = array(
+    //    array('nameOfFilter' => array('nameOfAction'))
+    //);
+
+    /** var filters to apply after all processing has occured */
+    //public \$afterFilter = array(
+    //    array('nameOfFilter' => array('nameOfAction'))
+    //);
+
+    /**
+     * Applied automatically before any action is called.
+     * @example use it to authenticate users or setup locales
+     */
+    public function filterStartup() {
+        // setup table connection
+        \$this->{$modelLowercase} = new {$model}();
+    }
+
+    /********************* actions *********************/
+
+    /** Responsible for presenting a collection back to the user. */
+	public function actionIndex(\$p) {
+        dump(\$this->{$modelLowercase}->findAll());
+    }
+
+    /** Responsible for showing a single specific object to the user. */
+	public function actionShow(\$id) {
+        dump(\$this->{$modelLowercase}->findFirst()->where(\$id));
+    }
+
+    /** Responsible for providing the user with an empty form to create a new object. */
+	public function actionNew() { }
+
+    /** Receives the form submission from the new action and creates the new object. */
+	public function actionCreate() {
+        \$this->{$modelLowercase}->save(\$this->request->getPost());
+        \$this->redirectTo('{$lowercase}/index');
+    }
+
+    /** Responsible for providing a form populated with a specific object to edit. */
+	public function actionEdit() { }
+
+    /** Receives the form submission from the edit action and updates the specific object. */
+	public function actionUpdate(\$id) {
+        \$this->{$modelLowercase}->update()->set(\$this->request->getPost())->where(\$id);
+        \$this->redirectTo('{$lowercase}/show/\$id');
+    }
+
+    /** Deletes the specified object from the database. */
+	public function actionDestroy(\$id) {
+        \$this->{$modelLowercase}->destroy()->where(\$id);
+        \$this->redirectTo('{$lowercase}/index');
     }
 
 }
@@ -138,7 +247,7 @@ CODE;
 
 $viewCode = <<<CODE
 <?php if (!defined('FARI')) die(); ?>
-<pre>This is a default view template in 'application/views/{$name}/{$index}.phtml'</pre>
+<pre>This is a default view template in 'application/views/{$name}/index.phtml'</pre>
 CODE;
 
     $presenterPath = 'application/presenters';
@@ -156,7 +265,12 @@ CODE;
         }
 
         // does the presenter file exist?
-        createFile("{$presenterPath}/{$name}Presenter.php", $presenterCode);
+        if (!empty($model)) {
+            createFile("{$presenterPath}/{$name}Presenter.php", $presenterAndModelCode);
+            newModel($model, 'id');
+        } else {
+            createFile("{$presenterPath}/{$name}Presenter.php", $presenterCode);
+        }
 
         // check/create views directory
         createDirectory($viewsPath . '/');
@@ -307,7 +421,7 @@ final class {$name}Presenter extends Fari_ApplicationPresenter {
             try {
                 \$this->user = new {$name}Auth(\$username, \$password, \$this->request->getPost('token'));
 
-                \$this->response->redirectTo('/' . self::ADMIN);
+                \$this->redirectTo('/' . self::ADMIN);
             } catch ({$prefix}UserNotAuthenticatedException \$e) {
                 \$this->flashFail = "Sorry, your username or password wasn't recognized";
             }
@@ -315,7 +429,7 @@ final class {$name}Presenter extends Fari_ApplicationPresenter {
 
 		// create token & display login form
 		\$this->bag->token = Fari_FormToken::create();
-		\$this->render('login');
+		\$this->renderAction('login');
 	}
 
 	/**
@@ -332,7 +446,7 @@ final class {$name}Presenter extends Fari_ApplicationPresenter {
 
         // create token & display login form
         \$this->bag->token = Fari_FormToken::create();
-		\$this->render('login');
+		\$this->renderAction('login');
 	}
 
 }

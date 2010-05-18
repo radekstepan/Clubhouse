@@ -317,7 +317,7 @@ class Table {
 
 
 
-    /********************* remove queries *********************/
+    /********************* destroy/remove queries *********************/
 
 
 
@@ -325,8 +325,8 @@ class Table {
      * Remove item(s) from a table.
      * @return Table, need to define a where clause
      */
-    public function remove() {
-        $this->method = '_remove';
+    public function destroy() {
+        $this->method = '_destroy';
 
         return $this;
     }
@@ -335,8 +335,8 @@ class Table {
      * Remove all items from a table.
      * @return integer number of rows affected
      */
-    public function removeAll() {
-        return $this->_remove();
+    public function destroyAll() {
+        return $this->_destroy();
     }
 
 
@@ -497,7 +497,7 @@ class Table {
      * Remove items from a table.
      * @return integer number of rows affected
      */
-    private function _remove() {
+    private function _destroy() {
         // SQL query
         $sql = "DELETE FROM {$this->getTableQuery()} {$this->getWhereQuery()}";
 

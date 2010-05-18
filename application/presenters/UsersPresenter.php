@@ -32,10 +32,10 @@ final class UsersPresenter extends Fari_ApplicationPresenter {
             $this->user = new User('admin');
 
         } catch (UserNotAuthenticatedException $e) {
-            $this->response->redirectTo('/login/');
+            $this->redirectTo('/login/');
 
         } catch (UserNotAuthorizedException $e) {
-            $this->render('Error404/error404');
+            $this->renderTemplate('Error404/error404');
 
         }
 
@@ -57,7 +57,7 @@ final class UsersPresenter extends Fari_ApplicationPresenter {
         $system = new System();
 
         $this->bag->users = $system->userPermissions();
-        $this->render('listing');
+        $this->renderAction('listing');
 	}
 
 
@@ -76,7 +76,7 @@ final class UsersPresenter extends Fari_ApplicationPresenter {
             // fetch the user we are editing
             $result = $this->accounts->getUser($userId);
             if (empty($result)) {
-                $this->render('error');
+                $this->renderAction('error');
             } else {
                 $this->bag->user = $result;
             }
@@ -103,10 +103,10 @@ final class UsersPresenter extends Fari_ApplicationPresenter {
                 }
 
                 // back to the users listing
-                $this->response->redirectTo('/users/');
+                $this->redirectTo('/users/');
             } else {
                 // display the form
-                $this->render();
+                $this->renderAction();
             }
         }
     }
@@ -135,7 +135,7 @@ final class UsersPresenter extends Fari_ApplicationPresenter {
                 }
             }
         } else {
-            $this->render('error404/javascript');
+            $this->renderTemplate('error404/javascript');
         }
     }
 

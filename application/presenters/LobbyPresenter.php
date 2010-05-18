@@ -31,15 +31,15 @@ final class LobbyPresenter extends Fari_ApplicationPresenter {
             $this->user = new User(array('admin', 'registered'));
         } catch (UserNotAuthenticatedException $e) {
             if ($this->request->isAjax()) {
-                $this->response('bye', 'json');
+                $this->renderJson('bye');
             } else {
-                $this->response->redirectTo('/login/');
+                $this->redirectTo('/login/');
             }
         } catch (UserNotAuthorizedException $e) {
             if ($this->request->isAjax()) {
-                $this->response('bye', 'json');
+                $this->renderJson('bye');
             } else {
-                $this->response->redirectTo('/login/');
+                $this->redirectTo('/login/');
             }
         }
 	}
@@ -47,7 +47,7 @@ final class LobbyPresenter extends Fari_ApplicationPresenter {
     public function filterAjax() {
         // is this Ajax?
         if (!$this->request->isAjax()) {
-            $this->render('error404/javascript');
+            $this->renderTemplate('error404/javascript');
         }
     }
 
@@ -64,7 +64,7 @@ final class LobbyPresenter extends Fari_ApplicationPresenter {
         $this->bag->isAdmin = $this->user->isAdmin();
         $this->bag->tabs = $this->user->inRooms();
 
-        $this->render('lobby');
+        $this->renderAction('lobby');
 	}
 
 
@@ -83,7 +83,7 @@ final class LobbyPresenter extends Fari_ApplicationPresenter {
 
         // clear out old users
         $system = new System();
-        $this->response($system->lobbyRooms($this->user->getId(), $this->user->isAdmin()), 'json');
+        $this->renderJson($system->lobbyRooms($this->user->getId(), $this->user->isAdmin()));
     }
 
 
@@ -101,7 +101,7 @@ final class LobbyPresenter extends Fari_ApplicationPresenter {
         $this->filterAjax();
 
         $system = new System();
-        $this->response($system->userCount(), 'json');
+        $this->renderJson($system->userCount());
     }
 
 }

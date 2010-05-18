@@ -30,7 +30,7 @@ final class AccountPresenter extends Fari_ApplicationPresenter {
     }
 
 	public function actionIndex($p) {
-        $this->render('Error404/error404');
+        $this->renderTemplate('Error404/error404');
     }
 
 
@@ -46,10 +46,10 @@ final class AccountPresenter extends Fari_ApplicationPresenter {
         $userAccount = $this->accounts->getInvitedUser($this->bag->code = $code = Fari_Escape::text($invitationCode));
         
         if (empty($code) OR empty($userAccount)) {
-            $this->render('expired');
+            $this->renderAction('expired');
         } else {
             $this->bag->account = $userAccount;
-            $this->render();
+            $this->renderAction();
         }
 	}
 
@@ -77,22 +77,22 @@ final class AccountPresenter extends Fari_ApplicationPresenter {
             $username = Fari_Escape::text(Fari_Decode::url($username));
 
             if (empty($username)) {
-                $this->response("The username can't be empty.", 'json');
+                $this->renderJson("The username can't be empty.");
             } else {
                 // alphanumeric only?
                 if (!Fari_Filter::isAlpha($username)) {
-                    $this->response("Only alphanumeric characters are allowed.", 'json');
+                    $this->renderJson("Only alphanumeric characters are allowed.");
                 } else {
                     // do we have a match?
                     if (!$this->accounts->isUsernameUnique($username)) {
-                        $this->response("The username \"$username\" is unavailable, sorry.", 'json');
+                        $this->renderJson("The username \"$username\" is unavailable, sorry.");
                     } else {
-                        $this->response('', 'json');
+                        $this->renderJson('');
                     }
                 }
             }
         } else {
-            $this->render('error404/javascript');
+            $this->renderTemplate('error404/javascript');
         }
     }
 
@@ -109,7 +109,7 @@ final class AccountPresenter extends Fari_ApplicationPresenter {
         $result = $this->accounts->getInvitedUser($invitationCode = $this->request->getPost('code'));
         
         if (empty($invitationCode) OR empty($result)) {
-            $this->render('error');
+            $this->renderAction('error');
         } else {
             $username = $this->request->getPost('username');
             $password1 = $this->request->getPost('password1');
@@ -117,14 +117,14 @@ final class AccountPresenter extends Fari_ApplicationPresenter {
 
             // some fail conditions
             if (!$this->accounts->isUsernameUnique($username) OR $password1 !== $password2) {
-                $this->render('error');
+                $this->renderAction('error');
             }
 
             // set the new credentials
             try {
                 $this->accounts->setInvitedUserCredentials($username, $password, $invitationCode);
             } catch (UserNotFoundException $e) {
-                $this->render('error');
+                $this->renderAction('error');
             }
 
             // force authenticate the user
@@ -132,7 +132,7 @@ final class AccountPresenter extends Fari_ApplicationPresenter {
             $user->forceAuthenticate($username);
 
             $this->bag->account = $result;
-            $this->render();
+            $this->renderAction();
         }
 	}
     

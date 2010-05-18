@@ -36,20 +36,20 @@ final class MessagePresenter extends Fari_ApplicationPresenter {
                 
             } catch (UserNotAuthenticatedException $e) {
                 // user is fetching new messages... not for long
-                $this->response('bye', 'json');
+                $this->renderJson('bye');
 
             } catch (UserNotAuthorizedException $e) {
-                $this->response('bye', 'json');
+                $this->renderJson('bye');
                 
             }
 
             $this->room = new Room();
         } else {
-            $this->render('error404/javascript');
+            $this->renderTemplate('error404/javascript');
         }
 	}
 	
-	public function actionIndex($p) { $this->response->redirectTo('/error404/'); }
+	public function actionIndex($p) { $this->redirectTo('/error404/'); }
 
 
 
@@ -75,7 +75,7 @@ final class MessagePresenter extends Fari_ApplicationPresenter {
             try {
                 $this->room->updateUserActivity($roomId, $time, $this->user->getId());
             } catch (UserNotFoundException $e) {
-                $this->response('bye', 'json');
+                $this->renderJson('bye');
             }
         }
     }
@@ -103,11 +103,11 @@ final class MessagePresenter extends Fari_ApplicationPresenter {
             try {
                 $this->room->updateUserActivity($roomId, $time, $this->user->getId());
             } catch (UserNotFoundException $e) {
-                $this->response('bye', 'json');
+                $this->renderJson('bye');
             }
 
-            $this->response($messages, 'json');
-        } else $this->response('bye', 'json');
+            $this->renderJson($messages);
+        } else $this->renderJson('bye');
     }
 
 
@@ -131,11 +131,11 @@ final class MessagePresenter extends Fari_ApplicationPresenter {
                 $result = $messages->switchHighlight($messageId);
             } catch (MessageNotFoundException $e) {
                 // you mess with us... we mess with you
-                $this->response('bye', 'json');
+                $this->renderJson('bye');
             }
 
-            $this->response($result, 'json');
-        } else $this->response('bye', 'json');
+            $this->renderJson($result);
+        } else $this->renderJson('bye');
     }
 
 }

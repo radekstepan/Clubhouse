@@ -30,7 +30,7 @@ final class SearchPresenter extends Fari_ApplicationPresenter {
         try {
             $this->user = new User();
         } catch (UserNotAuthenticatedException $e) {
-            $this->response->redirectTo('/login/');
+            $this->redirectTo('/login/');
         }
 	}
 
@@ -53,12 +53,12 @@ final class SearchPresenter extends Fari_ApplicationPresenter {
             $result = $messages->search($q);
 
             // render empty results
-            if (empty($result)) $this->render('empty');
+            if (empty($result)) $this->renderAction('empty');
             else $this->bag->results = $result;
             
-            $this->render('results');
+            $this->renderAction('results');
         } else {
-            $this->response->redirectTo('/transcripts/');
+            $this->redirectTo('/transcripts/');
         }
 	}
 
