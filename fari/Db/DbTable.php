@@ -140,13 +140,6 @@ class Table {
      * @param mixed $value to save
      */
     public function __set($column, $value) {
-        // extract set prefix
-        try {
-            if (substr($column, 0, 3) !== 'set') {
-                throw new Fari_Exception("Prepend 'set' before the column name.");
-            } else $column = substr($column, 3);
-        } catch (Fari_Exception $exception) { $exception->fire(); }
-
         // save
         $this->data[$column] = $value;
  	}
@@ -158,8 +151,6 @@ class Table {
      */
     public function set(array $values) {
         foreach ($values as $key => $value) {
-            // prepend set prefix
-            $key = 'set' . $key;
             // set
             $this->$key = $value;
         }
@@ -293,6 +284,8 @@ class Table {
      */
     public function findFirst() {
         $this->limit = 1;
+        assert('isset($this->primaryKey); // primary key needs to be set');
+        $this->orderBy("{$this->primaryKey} ASC");
         $this->method = '_find';
         return $this;
     }
@@ -303,6 +296,8 @@ class Table {
      */
     public function findLast() {
         $this->limit = 1;
+        assert('isset($this->primaryKey); // primary key needs to be set');
+        $this->orderBy("{$this->primaryKey} DESC");
         $this->method = '_find';
         return $this;
     }
@@ -317,7 +312,7 @@ class Table {
 
 
 
-    /********************* destroy/remove queries *********************/
+    /********************* delete queries *********************/
 
 
 
@@ -325,8 +320,8 @@ class Table {
      * Remove item(s) from a table.
      * @return Table, need to define a where clause
      */
-    public function destroy() {
-        $this->method = '_destroy';
+    public function delete() {
+        $this->method = '_delete';
 
         return $this;
     }
@@ -335,8 +330,8 @@ class Table {
      * Remove all items from a table.
      * @return integer number of rows affected
      */
-    public function destroyAll() {
-        return $this->_destroy();
+    public function deleteAll() {
+        return $this->_delete();
     }
 
 
@@ -399,7 +394,7 @@ class Table {
      * @return id of the inserted row
      */
     public function save(array $values=NULL) {
-        $this->add($values);
+        return $this->add($values);
     }
 
     /**
@@ -475,7 +470,7 @@ class Table {
         $sql = "SELECT {$this->getSelectedColumns()} FROM {$this->getTableQuery()} {$this->getWhereQuery()}";
         if (isset($this->order)) $sql .= " ORDER BY {$this->order}";
         if (isset($this->limit)) $sql .= " LIMIT {$this->limit}";
-        
+
         // prepare SQL
         $statement = $this->db->prepare($sql);
         // bind where clause
@@ -484,20 +479,23 @@ class Table {
         // notify
         $this->logger->notify($this->toString($sql));
 
+        // we are going to clear the limit so...
+        $limit = $this->limit;
+
         // reset data
         $this->clearData();
 
         // execute query and return an array result
         $statement->execute();
         $result = $statement->fetchAll(PDO::FETCH_ASSOC);
-        return ($this->limit == 1) ? (empty($result)) ? array() : end($result) : $result;
+        return ($limit == 1) ? (empty($result)) ? array() : current($result) : $result;
     }
 
     /**
      * Remove items from a table.
      * @return integer number of rows affected
      */
-    private function _destroy() {
+    private function _delete() {
         // SQL query
         $sql = "DELETE FROM {$this->getTableQuery()} {$this->getWhereQuery()}";
 
@@ -705,8 +703,8 @@ class Table {
         $result = '';
         $i = 0;
         foreach ($this->where as $column => $value) {
-            // WHERE IN ()
-            if (($operator = $this->findOperator($value)) == 'IN') {
+            // WHERE (NOT) IN ()
+            if (strpos($operator = $this->findOperator($value), 'IN') !== FALSE) {
                 // no binding occurs...
                 $result .= "{$column} {$value} AND ";
             // the rest...
@@ -726,9 +724,12 @@ class Table {
      */
     private function bindWhere($statement) {
         $i = 0;
-        foreach ($this->where as $column => $value) {
-            // LIKE statement?
-            if (strpos($value, '*') !== FALSE) $value = str_replace('*', '%', $value);
+        foreach ($this->where as $column => &$value) {
+            // (NOT)LIKE statements?
+            if (substr($value, 0, 1) == '!') $value = substr($value, 1);
+            if (substr($value, 0, 1) == '*') $value = str_replace('*', '%', $value);
+            // skip WHERE (NOT) IN
+            else if (substr($value, 0, 2) == 'IN' || substr($value, 0, 6) == 'NOT IN') continue;
             // strip any operators and whitespace from the value
             $value = preg_replace('/[>|<|=|\s\s+]/', '', $value);
 
@@ -746,19 +747,23 @@ class Table {
      */
     private function findOperator($value) {
         // LIKE
-        if (strpos($value, '*') !== FALSE) { return 'LIKE';
+        if (substr($value, 0, 1) == '*') { return 'LIKE';
+        // NOT LIKE
+        } elseif (substr($value, 0, 2) == '!*') { return 'NOT LIKE';
         // >=
-        } elseif (strpos($value, '>=') !== FALSE) { return '>=';
+        } elseif (substr($value, 0, 2) == '>=') { return '>=';
         // <=
-        } elseif (strpos($value, '<=') !== FALSE) { return '<=';
+        } elseif (substr($value, 0, 2) == '<=') { return '<=';
         // >
-        } elseif (strpos($value, '>') !== FALSE) { return '>';
+        } elseif (substr($value, 0, 1) == '>') { return '>';
         // <
-        } elseif (strpos($value, '<') !== FALSE) { return '<';
+        } elseif (substr($value, 0, 1) == '<') { return '<';
         // !=
-        } elseif (strpos($value, '!=') !== FALSE) { return '!=';
+        } elseif (substr($value, 0, 2) == '!=') { return '!=';
+        // NOT IN
+        } elseif (substr($value, 0, 6) == 'NOT IN') { return 'NOT IN';
         // IN
-        } elseif (strpos($value, 'IN') !== FALSE) { return 'IN';
+        } elseif (substr($value, 0, 2) == 'IN') { return 'IN';
         // =
         } else return '=';
     }
@@ -783,6 +788,11 @@ class Table {
      */
     private function clearData() {
         $this->data = array();
+        $this->join = NULL;
+        $this->limit = NULL;
+        $this->order = NULL;
+        $this->select = NULL;
+        $this->where = NULL;
     }
 
     /**

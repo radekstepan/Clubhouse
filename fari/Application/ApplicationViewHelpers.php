@@ -13,7 +13,7 @@
 
 /**
  * Helper class containing values etc.
- * 
+ *
  * @copyright Copyright (c) 2008, 2010 Radek Stepan
  * @package   Fari Framework\Application
  */
@@ -88,7 +88,7 @@ function renderPartial($name) {
         $partial = BASEPATH . '/' . APP_DIR . '/views/' . Fari_ApplicationViewHelper::getPresenter()
             . '/_' . $name . '.phtml';
     }
-    
+
     // is it valid?
     try {
         // check if file path exists
@@ -145,8 +145,11 @@ function stylesheetLinkTag($css) {
     // prepend slash?
     if (substr($css, 0, 1) !== '/') $css = "/{$css}";
 
+    // append timestamp only in dev environment
+    $mktime = Fari_ApplicationEnvironment::isDevelopment() ? '?' . mktime() : '';
+
     // echo with trailing timestamp
-    echo '<link href="' . WWW_DIR . "/public{$css}" . '?' . mktime() .
+    echo '<link href="' . WWW_DIR . "/public{$css}" . $mktime .
          '" media="screen" rel="stylesheet" type="text/css" />' . "\n";
 }
 
@@ -159,7 +162,7 @@ function javascriptIncludeTag($js) {
     // preconditions
     assert('!empty($js); // javascript file not defined');
     assert('is_string($js); // pass filename as a string');
-    
+
     // trim whitespace
     $js = trim($js);
 
@@ -169,9 +172,23 @@ function javascriptIncludeTag($js) {
     // prepend slash?
     if (substr($js, 0, 1) !== '/') $js = "/{$js}";
 
+    // append timestamp only in dev environment
+    $mktime = Fari_ApplicationEnvironment::isDevelopment() ? '?' . mktime() : '';
+
     // echo with trailing timestamp
-    echo '<script src="' . WWW_DIR . "/public{$js}" . '?' . mktime() .
+    echo '<script src="' . WWW_DIR . "/public{$js}" . $mktime .
          '" type="text/javascript"></script>' . "\n";
+}
+
+/**
+ * Form an atom RSS feed
+ * @param string $link
+ * @param boolean $echo echo output immediatelly?
+ */
+function atomTag($link, $echo=TRUE) {
+    $url = url($link, FALSE);
+    $tag = '<link href="'.$url.'" rel="alternate" title="ATOM" type="application/atom+xml" />';
+    if ($echo) echo $tag; else return $tag;
 }
 
 /**
@@ -193,8 +210,11 @@ function imageTag($img) {
     // determine file so we can generate alt tag
     $file = ucfirst(str_replace("-", " ", current(explode('.', end(explode('/', $img))))));
 
+    // append timestamp only in dev environment
+    $mktime = Fari_ApplicationEnvironment::isDevelopment() ? '?' . mktime() : '';
+
     // echo with trailing timestamp
-    echo "<img alt=\"{$file}\" src=\"" . WWW_DIR . "/public{$img}" . '?' . mktime() . '" />';
+    echo "<img alt=\"{$file}\" src=\"" . WWW_DIR . "/public{$img}" . $mktime . '" />';
 }
 
 /**
@@ -289,12 +309,18 @@ function url($link, $echo=TRUE, $domain=FALSE) {
  * Will apply a highlight class to text.
  * @param string $string input text
  * @param string $highlight regex used in preg_replace
+ * @param boolean $echo echo output immediatelly?
  */
-function highlight($string, $highlight) {
+function highlight($string, $highlight, $echo=TRUE) {
     // preconditions
     assert('!empty($highlight); // you need to define what to highlight');
     // apply highlight
-    echo preg_replace("/($highlight)/", "<strong class='highlight'>$1</strong>", $string);
+    $string = preg_replace("/($highlight)/i", "<strong class='highlight'>$1</strong>", $string);
+    if ($echo) {
+        echo $string;
+    } else {
+        return $string;
+    }
 }
 
 /**

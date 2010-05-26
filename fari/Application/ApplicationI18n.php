@@ -17,7 +17,7 @@
  * @copyright Copyright (c) 2008, 2010 Radek Stepan
  * @package   Fari Framework\Application
  */
-class Fari_ApplicationI18n extends Fari_File {
+final class Fari_ApplicationI18n extends Fari_File {
 
     /**#@+ directory with language locale */
 	const LOCALE_DIR = 'config/locales';

@@ -17,7 +17,7 @@
  * @copyright Copyright (c) 2008, 2010 Radek Stepan
  * @package   Fari Framework\Application
  */
-class Fari_ApplicationRequest {
+final class Fari_ApplicationRequest {
 
     /** @var Fari_ApplicationRoute */
     private $route;

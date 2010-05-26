@@ -17,7 +17,7 @@
  * @copyright Copyright (c) 2008, 2010 Radek Stepan
  * @package   Fari Framework\Application
  */
-class Fari_ApplicationEnvironment {
+final class Fari_ApplicationEnvironment {
 
     /**
      * Detect environment type.

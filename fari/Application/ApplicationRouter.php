@@ -17,7 +17,7 @@
  * @copyright Copyright (c) 2008, 2010 Radek Stepan
  * @package   Fari Framework\Application
  */
-class Fari_ApplicationRouter {
+final class Fari_ApplicationRouter {
 
 	/** @var string with Fari_ApplicationPresenters */
 	private static $presenterDir = '';

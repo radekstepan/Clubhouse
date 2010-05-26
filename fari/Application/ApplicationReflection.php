@@ -17,7 +17,7 @@
  * @copyright Copyright (c) 2008, 2010 Radek Stepan
  * @package   Fari Framework\Application
  */
-class Fari_ApplicationReflection {
+final class Fari_ApplicationReflection {
 
     /** @var ReflectionMethod */
     private $method;

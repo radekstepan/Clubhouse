@@ -128,7 +128,7 @@ class Fari_TestUnit {
                 color:#fff;font-size:100%;margin:0;padding:1px 0;}#message{border-top:1px solid <?php echo $line; ?>;
                 padding:5px 30px 10px;}h1{margin-bottom:0;font-weight:400;font-size:175%;}#box{background-color:#EEE;
                 border:1px solid #ADAEAF;margin:10px 30px 0;padding:5px;}#test{margin:10px 30px 0;padding:5px;background:#F5F5F5;
-                color:#33393C;border:1px solid #CCCDCF;}#test .failed{color:#C52F24;}#test .passed{color:#26BF26;}
+                color:#33393C;border:1px solid #CCCDCF;}#test .failed{color:#C52F24;}#test .passed{color:#008800;}
                 i{color:#999;}.num{color:#9E9E7E;font-style:normal;font-weight:400;}a{color:#980905;}td{padding-right:20px;}
                 table{font:16px/1.5 "Trebuchet MS", "Geneva CE", lucida, sans-serif;font-size:100%;}#title b,span.err{color:#FFF;}
                 .code{background-color:#FFF9D8;border:1px solid #FECA51;margin:10px 30px;padding:5px;}.error{background-color:#C52F24;

@@ -17,7 +17,7 @@
  * @copyright Copyright (c) 2008, 2010 Radek Stepan
  * @package   Fari Framework\Application
  */
-class Fari_ApplicationRoute extends Fari_Bag {
+final class Fari_ApplicationRoute extends Fari_Bag {
 	
     /**#@+ $_GET variable containing route (coming from .htaccess) */
 	const ROUTE = 'route';

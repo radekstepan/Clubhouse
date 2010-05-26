@@ -17,7 +17,7 @@
  * @copyright Copyright (c) 2008, 2010 Radek Stepan
  * @package   Fari Framework\Application
  */
-class Fari_ApplicationResponse {
+final class Fari_ApplicationResponse {
 
     /** @var default response code */
     private $responseCode = '200';
@@ -169,7 +169,7 @@ class Fari_ApplicationResponse {
 	 */
 	function redirectTo($url) {
 		// add forward slash if not specified
-		if ($url[0] !== '/') $url .= '/';
+		if ($url[0] !== '/') $url = "/{$url}";
 
 		// is this an AJAX call?
 		if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest') {
@@ -182,5 +182,5 @@ class Fari_ApplicationResponse {
         // die to 'protect' the presenter calling us
         die();
 	}
-	
+
 }

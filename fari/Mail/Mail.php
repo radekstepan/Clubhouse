@@ -54,12 +54,19 @@ abstract class Fari_Mail {
 
     /**
      * Add to field.
-     * @param string $email Email address
+     * @param mixed $email Email address
      * @param string $name Optional name
      * @return Fari_Mail subclass
      */
     public function addTo($email, $name=NULL) {
-        $this->setHeader('To', $this->formatEmail($email, $name));
+        // if passing an array will form multiple recipients
+        if (is_array($email)) {
+            foreach ($email as &$e) $e = $this->formatEmail($e);
+            $this->setHeader('To', implode(',', $email));
+        } else {
+            // form a single recipient
+            $this->setHeader('To', $this->formatEmail($email, $name));
+        }
         return $this;
     }
 
@@ -109,7 +116,7 @@ abstract class Fari_Mail {
     public function getHeader($type) {
         return $this->headers[$type];
     }
-    
+
     /**
      * Setup host, port, login and password.
      * @param string $host
@@ -186,5 +193,5 @@ abstract class Fari_Mail {
      * Sender.
      */
     abstract function send();
-	
+
 }

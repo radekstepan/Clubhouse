@@ -70,5 +70,12 @@ function splitCamelCase($string) {
  * @param string $title Title of the output
  */
 function dump($mixed, $title='Variables Dump') {
-    Fari_ApplicationDiagnostics::dump($mixed, $title);
+    if (is_string($mixed) && substr($mixed, 0, 5) == '<?xml') {
+        // an XML dump
+        if (!headers_sent()) header('Content-Type:text/xml');
+        echo $mixed;
+    } else {
+        // standard dump
+        Fari_ApplicationDiagnostics::dump($mixed, $title);
+    }
 }

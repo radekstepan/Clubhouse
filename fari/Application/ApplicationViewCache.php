@@ -17,7 +17,7 @@
  * @copyright Copyright (c) 2008, 2010 Radek Stepan
  * @package   Fari Framework\Application
  */
-class Fari_ApplicationViewCache {
+final class Fari_ApplicationViewCache {
 	
     /**#@+ cache files directory & extension */
 	const CACHE_DIR = '/tmp/';

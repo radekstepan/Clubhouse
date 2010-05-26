@@ -30,10 +30,16 @@ class Fari_AuthenticatorSimple extends Fari_AuthenticatorTemplate {
 
     /**
      * Setup database connection.
-     * @param string $tableName
+     * @param mixed $table
      */
-   	public function __construct($tableName='users') {
-        $this->table = new Table($tableName);
+   	public function __construct($table='users') {
+        // are we passing a Table instance already?
+        if ($table instanceof Table) {
+            $this->table = $table;
+        // create new...
+        } else {
+            $this->table = new Table($table);
+        }
     }
 
 
@@ -139,5 +145,5 @@ class Fari_AuthenticatorSimple extends Fari_AuthenticatorTemplate {
     public function authenticateFail() {
         return FALSE;
     }
-	
+
 }

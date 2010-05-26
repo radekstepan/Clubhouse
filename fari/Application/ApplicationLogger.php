@@ -18,7 +18,7 @@
  * @copyright Copyright (c) 2008, 2010 Radek Stepan
  * @package   Fari Framework\Application
  */
-class Fari_ApplicationLogger {
+final class Fari_ApplicationLogger {
 
     /**#@+ directory where to save logs */
     const LOG_DIRECTORY = '/log';
@@ -64,7 +64,7 @@ class Fari_ApplicationLogger {
      */
     private function updateCounters($type) {
         assert('!empty($type) && is_string($type); // log file type better be set!');
-        
+
         if (array_key_exists($type, $this->counters)) {
             // increase count
             $this->counters[$type]++;
@@ -92,11 +92,16 @@ class Fari_ApplicationLogger {
         $color = ($this->counters[$type] % 2 == 0) ? 'green' : 'blue';
 
         // open file for writing
-		$logFile = fopen(BASEPATH . self::LOG_DIRECTORY . '/' . "{$type}.log", 'a');
-        // append to file...
-		fwrite($logFile, $this->formatTime($color) . "\n  {$this->rLogHighlight($content)}\n\n");
-		// close file
-		fclose($logFile);
+        try {
+            if ((!$logFile = fopen(BASEPATH . self::LOG_DIRECTORY . '/' . "{$type}.log", 'a'))) {
+                throw new Fari_Exception('Failed to open log file for writing '
+                    . BASEPATH . self::LOG_DIRECTORY . '/' . "{$type}.log");
+            }
+            // append to file...
+            fwrite($logFile, $this->formatTime($color) . "\n  {$this->rLogHighlight($content)}\n\n");
+            // close file
+            fclose($logFile);
+        } catch (Fari_Exception $exception) { $exception->fire(); }
 	}
 
     /**
@@ -119,7 +124,7 @@ class Fari_ApplicationLogger {
     private function rLogHighlight($string, $color='black', $underline=FALSE) {
         // apply underline?
         $underline = ($underline) ? '4' : '1';
-        
+
         // color switcher
         switch ($color) {
             case "magenta":
@@ -141,5 +146,5 @@ class Fari_ApplicationLogger {
                 return "[{$underline};29;1m{$string}[0m";
         }
     }
-	
+
 }

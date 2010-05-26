@@ -150,7 +150,7 @@ final class {$name}Presenter extends Fari_ApplicationPresenter {
 	public function actionUpdate() { }
 
     /** Deletes the specified object from the database. */
-	public function actionDestroy() { }
+	public function actionDelete() { }
 
 }
 CODE;
@@ -216,11 +216,11 @@ final class {$name}Presenter extends Fari_ApplicationPresenter {
     /** Receives the form submission from the edit action and updates the specific object. */
 	public function actionUpdate(\$id) {
         \$this->{$modelLowercase}->update()->set(\$this->request->getPost())->where(\$id);
-        \$this->redirectTo('{$lowercase}/show/\$id');
+        \$this->redirectTo("{$lowercase}/show/{\$id}");
     }
 
     /** Deletes the specified object from the database. */
-	public function actionDestroy(\$id) {
+	public function actionDelete(\$id) {
         \$this->{$modelLowercase}->destroy()->where(\$id);
         \$this->redirectTo('{$lowercase}/index');
     }
@@ -402,9 +402,6 @@ final class {$name}Presenter extends Fari_ApplicationPresenter {
     const ADMIN = 'admin';
     /**#@-*/
 
-    /** @var authenticated user */
-    private \$user;
-
 	public function actionIndex(\$p) {
         \$this->actionLogin();
     }
@@ -419,7 +416,7 @@ final class {$name}Presenter extends Fari_ApplicationPresenter {
             \$password = Fari_Decode::accents(\$this->request->getPost('password'));
 
             try {
-                \$this->user = new {$name}Auth(\$username, \$password, \$this->request->getPost('token'));
+                \$user = new {$name}Auth(\$username, \$password, \$this->request->getPost('token'));
 
                 \$this->redirectTo('/' . self::ADMIN);
             } catch ({$prefix}UserNotAuthenticatedException \$e) {
@@ -436,11 +433,11 @@ final class {$name}Presenter extends Fari_ApplicationPresenter {
 	 * Destroy user session.
 	 */
     public function actionLogout() {
-        // do we have an instance?
-        if (\$this->user instanceof {$prefix}User) {
-            \$this->flashSuccess = 'You have been logged out';
-            \$this->user->signOut();
-        } else {
+        try {
+            \$user = new {$name}User();
+            \$user->signOut();
+            \$this->flashSuccess = "You have been logged out";
+        } catch (AuthUserNotAuthenticatedException \$e) {
             \$this->flashSuccess = 'You are already logged out';
         }
 
@@ -490,16 +487,33 @@ $userModelCode = <<<CODE
  * Authenticated user.
  *
  * @example   This object will throw an exception if user is not authenticated, use in admin
- * @package   Application\Models\\$prefix
+ * @package   Application\Models\{$prefix}
  */
 class {$prefix}User extends Fari_AuthenticatorSimple {
 
-        public function __construct() {
-            parent::__construct('{$lowercase}');
+    private \$table;
 
-            // no entry, we are not logged in, fail the constructor
-            if (!\$this->isAuthenticated()) throw new {$prefix}UserNotAuthenticatedException();
-        }
+    /**
+     * Check that user is authenticated.
+     * @throws {$prefix}UserNotAuthenticatedException
+     */
+    public function __construct() {
+        // construct the db table
+        \$this->table = new Table('{$lowercase}');
+        // call the authenticator
+        parent::__construct(\$this->table);
+
+        // no entry, we are not logged in, fail the constructor
+        if (!\$this->isAuthenticated()) throw new {$prefix}UserNotAuthenticatedException();
+    }
+
+    /**
+     * Fetch row from '{$lowercase}' table.
+     * @return array
+     */
+    public function getUser() {
+        return \$this->table->findFirst()->where(array('username' => \$this->getCredentials()));
+    }
 
 }
 
@@ -582,7 +596,7 @@ CODE;
         createDirectory("{$viewsPath}/{$name}/");
 
         // default index file
-        createFile("{$viewsPath}/{$name}/login.tpl.php", $viewCode);
+        createFile("{$viewsPath}/{$name}/login.phtml", $viewCode);
 
         // models are in prefix subdirectory
         createDirectory("{$modelsPath}/{$prefix}/");
@@ -604,7 +618,7 @@ CODE;
  * Create a new directory/check it exists.
  * @param string $path to the directory
  */
-function createDirectory($path) {    
+function createDirectory($path) {
     // does the dir exist? I can haz file? Dir! File? Cheese!
     if (file_exists(BASEPATH . "/{$path}")) {
         message("      exists  {$path}", 'gray');
