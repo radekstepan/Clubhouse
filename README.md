@@ -16,9 +16,9 @@ phpinfo();
 ?>
 ```
 
-Visit the (http://127.0.0.1/clubhouse/installation)[http://127.0.0.1/clubhouse/installation] to initially populate the database, alternatively use the database packaged in this repo.
+Visit the [127.0.0.1/clubhouse/installation](http://127.0.0.1/clubhouse/installation) to initially populate the database, alternatively use the database packaged in this repo.
 
-Visit (http://127.0.0.1/clubhouse)[http://127.0.0.1/clubhouse] usign `admin:admin` as a username and password.
+Visit [127.0.0.1/clubhouse](http://127.0.0.1/clubhouse) usign `admin:admin` as a username and password.
 
 ## Troubleshooting
 
