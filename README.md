@@ -2,6 +2,8 @@
 
 A 37Signals' Campfire port into PHP
 
+![image](https://github.com/radekstepan/Clubhouse/raw/master/example.png)
+
 Works like a chatroom allowing users to share files, images, YouTube videos, code and chat in real time. Conversation transcripts, fine-grained user access, guest rooms and a snappy AJAX interface is a cherry on top.
 
 ## Getting started
@@ -15,6 +17,8 @@ phpinfo();
 ```
 
 Visit the (http://127.0.0.1/clubhouse/installation)[http://127.0.0.1/clubhouse/installation] to initially populate the database, alternatively use the database packaged in this repo.
+
+Visit (http://127.0.0.1/clubhouse)[http://127.0.0.1/clubhouse] usign `admin:admin` as a username and password.
 
 ## Troubleshooting
 
